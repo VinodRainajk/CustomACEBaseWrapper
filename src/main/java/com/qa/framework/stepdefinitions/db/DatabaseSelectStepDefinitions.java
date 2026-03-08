@@ -1,5 +1,6 @@
 package com.qa.framework.stepdefinitions.db;
 
+import com.qa.framework.db.DatabaseConnection;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 
@@ -19,9 +20,23 @@ public class DatabaseSelectStepDefinitions {
 
     @When("I execute the query {string}")
     public void iExecuteTheQuery(String query) {
+        iExecuteTheQueryOn(query, null);
+    }
+
+    @When("I execute the query {string} on {string}")
+    public void iExecuteTheQueryOn(String query, String connectionName) {
         try {
-            ctx().setQueryResults(ctx().getCurrentConnection().executeQuery(query));
+            DatabaseConnection conn = connectionName != null && !connectionName.isEmpty()
+                    ? ctx().getDbManager().getConnection(connectionName)
+                    : ctx().getCurrentConnection();
+            assertNotNull(conn, "No connection found" + (connectionName != null ? " for: " + connectionName : ""));
+            List<Map<String, Object>> results = conn.executeQuery(query);
+            ctx().setQueryResults(results);
             ctx().setLastException(null);
+            if (connectionName != null) {
+                ctx().putResultsForConnection(connectionName, results);
+                ctx().setCurrentConnection(conn);
+            }
         } catch (Exception e) {
             ctx().setLastException(e);
         }
@@ -149,6 +164,24 @@ public class DatabaseSelectStepDefinitions {
             assertTrue(row.containsKey(columnName), "Column '" + columnName + "' should exist");
             assertNotNull(row.get(columnName), "Column '" + columnName + "' should not be null");
         }
+    }
+
+    @Then("the result row count from {string} should equal the result row count from {string}")
+    public void theResultRowCountFromShouldEqualTheResultRowCountFrom(String conn1, String conn2) {
+        List<Map<String, Object>> results1 = ctx().getResultsForConnection(conn1);
+        List<Map<String, Object>> results2 = ctx().getResultsForConnection(conn2);
+        assertNotNull(results1, "No results for connection: " + conn1);
+        assertNotNull(results2, "No results for connection: " + conn2);
+        assertEquals(results1.size(), results2.size(),
+                "Row count mismatch: " + conn1 + " has " + results1.size() + ", " + conn2 + " has " + results2.size());
+    }
+
+    @Then("the query on {string} should return {int} row(s)")
+    public void theQueryOnShouldReturnRows(String connectionName, int expectedRowCount) {
+        List<Map<String, Object>> results = ctx().getResultsForConnection(connectionName);
+        assertNotNull(results, "No results for connection: " + connectionName);
+        assertEquals(expectedRowCount, results.size(),
+                "Expected " + expectedRowCount + " rows on " + connectionName + " but got " + results.size());
     }
 
     @Then("row {int} should contain column {string} with value {string}")

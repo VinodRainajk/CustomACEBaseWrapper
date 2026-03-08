@@ -1,5 +1,6 @@
 package com.qa.framework.stepdefinitions.db;
 
+import com.qa.framework.db.DatabaseConfigLoader;
 import com.qa.framework.db.DatabaseConnection;
 import com.qa.framework.db.DatabaseConnectionFactory;
 import com.qa.framework.db.DatabaseManager;
@@ -7,15 +8,38 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 
+import java.util.Map;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Step definitions for database connection management.
+ * Supports YAML config (master + feature + section) via config name in steps.
  */
 public class DatabaseConnectionStepDefinitions {
 
     private DatabaseStepContext ctx() {
         return DatabaseStepContext.getInstance();
+    }
+
+    @Given("I connect to database {string}")
+    public void iConnectToDatabase(String configName) {
+        iConnectToDatabaseAs(configName, configName);
+    }
+
+    @Given("I connect to database {string} as {string}")
+    public void iConnectToDatabaseAs(String configName, String connectionName) {
+        Map<String, Object> config = DatabaseConfigLoader.resolveConfig(
+                configName,
+                ctx().getFeatureName(),
+                ctx().getScenarioName()
+        );
+        DatabaseConnection connection = DatabaseConfigLoader.createConnectionFromResolvedConfig(config);
+        connection.connect();
+        ctx().getDbManager().addConnection(connectionName, connection);
+        ctx().setCurrentConnection(connection);
+        assertNotNull(ctx().getCurrentConnection(), "Database connection should be created for config: " + configName);
+        assertTrue(ctx().getCurrentConnection().isConnected(), "Should be connected to database");
     }
 
     @Given("I have a database connection named {string} with URL {string} username {string} and password {string}")

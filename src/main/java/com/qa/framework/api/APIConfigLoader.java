@@ -8,18 +8,26 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 /**
- * Loads API config: master.yaml + optional feature-specific override.
- * Feature config (e.g. google-config.yaml for google.feature) overrides master.
+ * Loads API config: master.yaml + optional profile folder + optional feature-specific override.
+ * Profile is passed via -Dprofile=dev (Option B: profile as folder).
  */
 public class APIConfigLoader {
 
     private static final String CONFIG_BASE = "config/";
     private static final String MASTER_CONFIG = CONFIG_BASE + "master.yaml";
+    private static final String PROFILE_PROPERTY = "profile";
+
+    /**
+     * Get the active profile from system property (-Dprofile=dev).
+     */
+    public static String getProfile() {
+        return System.getProperty(PROFILE_PROPERTY);
+    }
 
     /**
      * Load merged config for the given feature.
      * @param featureName base name of feature file without extension (e.g. "user-api")
-     * @return merged config; master values used when feature config absent
+     * @return merged config; master + profile + feature
      */
     public static APIConfig loadConfig(String featureName) {
         APIConfig master = loadYaml(MASTER_CONFIG, APIConfig.class);
@@ -27,8 +35,24 @@ public class APIConfigLoader {
             master = new APIConfig();
         }
 
+        String profile = getProfile();
+        if (profile != null && !profile.isEmpty()) {
+            String profileMasterPath = CONFIG_BASE + profile + "/master.yaml";
+            APIConfig profileMaster = loadYaml(profileMasterPath, APIConfig.class);
+            if (profileMaster != null) {
+                master = merge(master, profileMaster);
+            }
+        }
+
         String featureConfigPath = CONFIG_BASE + featureName + "-config.yaml";
         APIConfig featureConfig = loadYaml(featureConfigPath, APIConfig.class);
+        if (profile != null && !profile.isEmpty()) {
+            String profileFeaturePath = CONFIG_BASE + profile + "/" + featureName + "-config.yaml";
+            APIConfig profileFeatureConfig = loadYaml(profileFeaturePath, APIConfig.class);
+            if (profileFeatureConfig != null) {
+                featureConfig = featureConfig != null ? merge(featureConfig, profileFeatureConfig) : profileFeatureConfig;
+            }
+        }
         if (featureConfig == null) {
             return master;
         }

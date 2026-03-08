@@ -107,13 +107,25 @@ Or in your test runner:
 @ConfigurationParameter(key = GLUE_PROPERTY_NAME, value = "com.qa.framework.stepdefinitions.db")
 ```
 
-### Step 4: Create Feature Files and Profiles
+### Step 4: Create Feature Files and Config
 
 See the **ACEBaseCustomTemplate** project for examples:
 - Feature files go in `src/test/resources/features/`
-- Database profiles go in `src/test/resources/config/`
+- Config goes in `src/test/resources/config/`
 
 **The step definitions are automatically available from this library!**
+
+### Step 5: Run with Profile (Optional)
+
+Pass the profile via Maven to use environment-specific config:
+
+```bash
+mvn test -Dprofile=dev
+mvn test -Dprofile=qa
+mvn test -Dprofile=staging
+```
+
+Profile uses **Option B: profile as folder** — each profile has its own subfolder under `config/`. See [CONFIGURATION.md](CONFIGURATION.md) for details.
 
 ## Usage Examples
 
@@ -192,7 +204,7 @@ Configuration files are located in `src/test/resources/config/`:
 - `sqlserver-config.properties`
 - `oracle-config.properties`
 
-**See [DATABASE_CONFIGURATION.md](DATABASE_CONFIGURATION.md) for detailed configuration guide.**
+**See [CONFIGURATION.md](CONFIGURATION.md) for profile and configuration guide.**
 
 ### Running Cucumber Tests
 
@@ -305,10 +317,10 @@ The library provides the following pre-built step definitions for database testi
 
 ## Documentation
 
+- **[CONFIGURATION.md](CONFIGURATION.md)** - Profile-based config (Option B: profile as folder), DB and API
+- **[DATABASE_ARCHITECTURE.md](DATABASE_ARCHITECTURE.md)** - Database config hierarchy and step definitions
+- **[API_ARCHITECTURE.md](API_ARCHITECTURE.md)** - API config and payload structure
 - **[QUICK_START.md](QUICK_START.md)** - Quick start guide for new users
-- **[DATABASE_CONFIGURATION.md](DATABASE_CONFIGURATION.md)** - Detailed database configuration guide
-- **[ARCHITECTURE.md](ARCHITECTURE.md)** - System architecture and design patterns
-- **[PROJECT_SUMMARY.md](PROJECT_SUMMARY.md)** - Complete project overview
 
 ## License
 

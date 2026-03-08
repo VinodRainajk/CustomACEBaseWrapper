@@ -1,0 +1,12 @@
+# config/dev/master_database.yml - Dev profile overrides
+# Used when: mvn test -Dprofile=dev
+
+mysql:
+  url: jdbc:mysql://localhost:3306/testdb_dev
+  username: dev_user
+  password: dev_pass
+
+mysql-world:
+  url: jdbc:mysql://localhost:3306/world
+  username: dev
+  password: admin

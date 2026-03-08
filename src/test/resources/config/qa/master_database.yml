@@ -1,0 +1,12 @@
+# config/qa/master_database.yml - QA profile overrides
+# Used when: mvn test -Dprofile=qa
+
+mysql:
+  url: jdbc:mysql://qa-host:3306/testdb
+  username: qa_user
+  password: qa_pass
+
+mysql-world:
+  url: jdbc:mysql://qa-host:3306/world
+  username: qa_user
+  password: qa_pass

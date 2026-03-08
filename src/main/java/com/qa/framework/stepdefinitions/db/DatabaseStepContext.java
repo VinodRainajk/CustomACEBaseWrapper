@@ -4,6 +4,7 @@ import com.qa.framework.config.ConfigurationManager;
 import com.qa.framework.db.DatabaseConnection;
 import com.qa.framework.db.DatabaseManager;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -19,6 +20,10 @@ public class DatabaseStepContext {
     private DatabaseManager dbManager;
     private ConfigurationManager configManager;
     private DatabaseConnection currentConnection;
+    private String featureName;
+    private String scenarioName;
+    /** Results by connection name for steps like "on \"mysql\"" */
+    private Map<String, List<Map<String, Object>>> resultsByConnection = new HashMap<>();
     private List<Map<String, Object>> queryResults;
     private int updateCount;
     private int deleteCount;
@@ -113,5 +118,33 @@ public class DatabaseStepContext {
 
     public void setFunctionResult(Object functionResult) {
         this.functionResult = functionResult;
+    }
+
+    public String getFeatureName() {
+        return featureName;
+    }
+
+    public void setFeatureName(String featureName) {
+        this.featureName = featureName;
+    }
+
+    public String getScenarioName() {
+        return scenarioName;
+    }
+
+    public void setScenarioName(String scenarioName) {
+        this.scenarioName = scenarioName;
+    }
+
+    public Map<String, List<Map<String, Object>>> getResultsByConnection() {
+        return resultsByConnection;
+    }
+
+    public void putResultsForConnection(String connectionName, List<Map<String, Object>> results) {
+        resultsByConnection.put(connectionName, results);
+    }
+
+    public List<Map<String, Object>> getResultsForConnection(String connectionName) {
+        return resultsByConnection.get(connectionName);
     }
 }
