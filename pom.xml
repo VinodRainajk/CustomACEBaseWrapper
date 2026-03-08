@@ -79,6 +79,13 @@
             <artifactId>ojdbc11</artifactId>
             <version>23.3.0.23.09</version>
         </dependency>
+
+        <!-- ACEBase - UI and API runners (step definitions remain in this project) -->
+        <dependency>
+            <groupId>com.acebase</groupId>
+            <artifactId>ace-base</artifactId>
+            <version>1.0.0</version>
+        </dependency>
     </dependencies>
 
     <build>

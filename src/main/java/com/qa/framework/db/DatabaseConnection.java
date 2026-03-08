@@ -110,6 +110,64 @@ public class DatabaseConnection {
     }
     
     /**
+     * Execute a prepared UPDATE, INSERT, or DELETE.
+     *
+     * @param query the SQL with placeholders
+     * @param parameters the parameters to bind
+     * @return number of rows affected
+     */
+    public int executePreparedUpdate(String query, Object... parameters) {
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            for (int i = 0; i < parameters.length; i++) {
+                preparedStatement.setObject(i + 1, parameters[i]);
+            }
+            return preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            throw new WrapperException("Failed to execute prepared update: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Execute a callable statement (stored procedure).
+     *
+     * @param callableSql the callable SQL, e.g. "{call procedure_name(?, ?)}"
+     * @param parameters input parameters
+     * @return list of result sets if procedure returns result sets, empty list otherwise
+     */
+    public List<Map<String, Object>> executeCallable(String callableSql, Object... parameters) {
+        List<Map<String, Object>> results = new ArrayList<>();
+        try (CallableStatement callableStatement = connection.prepareCall(callableSql)) {
+            for (int i = 0; i < parameters.length; i++) {
+                callableStatement.setObject(i + 1, parameters[i]);
+            }
+            boolean hasResultSet = callableStatement.execute();
+            while (hasResultSet) {
+                try (ResultSet resultSet = callableStatement.getResultSet()) {
+                    results.addAll(extractResultSet(resultSet));
+                }
+                hasResultSet = callableStatement.getMoreResults();
+            }
+        } catch (SQLException e) {
+            throw new WrapperException("Failed to execute callable: " + e.getMessage(), e);
+        }
+        return results;
+    }
+
+    private List<Map<String, Object>> extractResultSet(ResultSet resultSet) throws SQLException {
+        List<Map<String, Object>> rows = new ArrayList<>();
+        ResultSetMetaData metaData = resultSet.getMetaData();
+        int columnCount = metaData.getColumnCount();
+        while (resultSet.next()) {
+            Map<String, Object> row = new HashMap<>();
+            for (int i = 1; i <= columnCount; i++) {
+                row.put(metaData.getColumnName(i), resultSet.getObject(i));
+            }
+            rows.add(row);
+        }
+        return rows;
+    }
+
+    /**
      * Execute a prepared statement query.
      * 
      * @param query the SQL query with placeholders
