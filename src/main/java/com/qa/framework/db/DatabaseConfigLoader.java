@@ -17,19 +17,22 @@ import java.util.Map;
 public class DatabaseConfigLoader {
 
     private static final String CONFIG_BASE = "config/";
-    private static final String MASTER_DB_CONFIG = CONFIG_BASE + "master_database.yml";
     private static final String PROFILE_PROPERTY = "profile";
+    private static final String DEFAULT_PROFILE = "local";
 
     /**
      * Get the active profile from system property (-Dprofile=dev).
+     * Defaults to "local" when not set.
      */
     public static String getProfile() {
-        return System.getProperty(PROFILE_PROPERTY);
+        String p = System.getProperty(PROFILE_PROPERTY);
+        return (p != null && !p.isEmpty()) ? p : DEFAULT_PROFILE;
     }
 
     /**
      * Resolve config for the given config name.
-     * Resolution: base → profile folder → feature → sections.
+     * All config lives inside profile folder: config/{profile}/
+     * Resolution: config/{profile}/master_database.yml + config/{profile}/{feature}-database.yml + sections
      *
      * @param configName   e.g. "mysql", "oracle"
      * @param featureName  base name of feature file (e.g. "cross-db")
@@ -37,37 +40,25 @@ public class DatabaseConfigLoader {
      * @return map with url, username, password, driver, type, timeout
      */
     public static Map<String, Object> resolveConfig(String configName, String featureName, String scenarioName) {
-        Map<String, Object> master = loadYamlMap(MASTER_DB_CONFIG);
-        if (master == null) {
-            throw new WrapperException("master_database.yml not found at " + MASTER_DB_CONFIG);
-        }
-
         String profile = getProfile();
-        if (profile != null && !profile.isEmpty()) {
-            String profileMasterPath = CONFIG_BASE + profile + "/master_database.yml";
-            Map<String, Object> profileMaster = loadYamlMap(profileMasterPath);
-            if (profileMaster != null) {
-                master = mergeMaps(master, profileMaster);
-            }
+        String profileBase = CONFIG_BASE + profile + "/";
+        String masterPath = profileBase + "master_database.yml";
+
+        Map<String, Object> master = loadYamlMap(masterPath);
+        if (master == null) {
+            throw new WrapperException("master_database.yml not found at " + masterPath + " (profile=" + profile + ")");
         }
 
         @SuppressWarnings("unchecked")
         Map<String, Object> baseConfig = (Map<String, Object>) master.get(configName);
         if (baseConfig == null) {
-            throw new WrapperException("Config '" + configName + "' not found in master_database.yml");
+            throw new WrapperException("Config '" + configName + "' not found in " + masterPath);
         }
 
         Map<String, Object> merged = new HashMap<>(baseConfig);
 
-        String featureConfigPath = CONFIG_BASE + featureName + "-database.yml";
+        String featureConfigPath = profileBase + featureName + "-database.yml";
         Map<String, Object> featureYaml = loadYamlMap(featureConfigPath);
-        if (profile != null && !profile.isEmpty()) {
-            String profileFeaturePath = CONFIG_BASE + profile + "/" + featureName + "-database.yml";
-            Map<String, Object> profileFeatureYaml = loadYamlMap(profileFeaturePath);
-            if (profileFeatureYaml != null) {
-                featureYaml = featureYaml != null ? mergeMaps(featureYaml, profileFeatureYaml) : new HashMap<>(profileFeatureYaml);
-            }
-        }
         if (featureYaml != null) {
             @SuppressWarnings("unchecked")
             Map<String, Object> featureConfig = (Map<String, Object>) featureYaml.get(configName);

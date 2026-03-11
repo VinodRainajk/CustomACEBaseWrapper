@@ -8,51 +8,43 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 /**
- * Loads API config: master.yaml + optional profile folder + optional feature-specific override.
+ * Loads API config: master-api.yaml + optional {feature}-config-api.yaml (mirrors DB: master_database.yml + {feature}-database.yml).
  * Profile is passed via -Dprofile=dev (Option B: profile as folder).
  */
 public class APIConfigLoader {
 
     private static final String CONFIG_BASE = "config/";
-    private static final String MASTER_CONFIG = CONFIG_BASE + "master.yaml";
     private static final String PROFILE_PROPERTY = "profile";
+    private static final String DEFAULT_PROFILE = "local";
 
     /**
      * Get the active profile from system property (-Dprofile=dev).
+     * Defaults to "local" when not set.
      */
     public static String getProfile() {
-        return System.getProperty(PROFILE_PROPERTY);
+        String p = System.getProperty(PROFILE_PROPERTY);
+        return (p != null && !p.isEmpty()) ? p : DEFAULT_PROFILE;
     }
 
     /**
      * Load merged config for the given feature.
+     * All config lives inside profile folder: config/{profile}/
+     *
      * @param featureName base name of feature file without extension (e.g. "user-api")
-     * @return merged config; master + profile + feature
+     * @return merged config from config/{profile}/master-api.yaml + config/{profile}/{feature}-config-api.yaml
      */
     public static APIConfig loadConfig(String featureName) {
-        APIConfig master = loadYaml(MASTER_CONFIG, APIConfig.class);
+        String profile = getProfile();
+        String profileBase = CONFIG_BASE + profile + "/";
+        String masterPath = profileBase + "master-api.yaml";
+
+        APIConfig master = loadYaml(masterPath, APIConfig.class);
         if (master == null) {
             master = new APIConfig();
         }
 
-        String profile = getProfile();
-        if (profile != null && !profile.isEmpty()) {
-            String profileMasterPath = CONFIG_BASE + profile + "/master.yaml";
-            APIConfig profileMaster = loadYaml(profileMasterPath, APIConfig.class);
-            if (profileMaster != null) {
-                master = merge(master, profileMaster);
-            }
-        }
-
-        String featureConfigPath = CONFIG_BASE + featureName + "-config.yaml";
+        String featureConfigPath = profileBase + featureName + "-config-api.yaml";
         APIConfig featureConfig = loadYaml(featureConfigPath, APIConfig.class);
-        if (profile != null && !profile.isEmpty()) {
-            String profileFeaturePath = CONFIG_BASE + profile + "/" + featureName + "-config.yaml";
-            APIConfig profileFeatureConfig = loadYaml(profileFeaturePath, APIConfig.class);
-            if (profileFeatureConfig != null) {
-                featureConfig = featureConfig != null ? merge(featureConfig, profileFeatureConfig) : profileFeatureConfig;
-            }
-        }
         if (featureConfig == null) {
             return master;
         }

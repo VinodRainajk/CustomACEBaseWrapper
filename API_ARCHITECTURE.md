@@ -163,25 +163,26 @@ The step definition resolves: `payloads/` + path + `.json` (or configurable defa
 **Principle:** API URLs and other settings come from config files. A **master config** is the base. A **feature-specific config** is **optional** and overrides only when present.
 
 ### Config Hierarchy
-```
-1. master.yaml (or master-config.yaml)   → Base config; used for all features
-2. {feature-name}-config.yaml            → OPTIONAL; if present, overrides master for that feature only
-```
 
-**Fallback:** If `google-config.yaml` is **not present**, all values come from `master.yaml`. The feature-specific config is optional.
+All API config lives inside profile folder: `config/{profile}/`
+
+```
+1. master-api.yaml              → Base API config (mirrors DB: master_database.yml)
+2. {feature-name}-config-api.yaml → OPTIONAL; overrides master for that feature
+```
 
 ### Naming Convention
-| Feature File     | Feature-Specific Config |
-|------------------|-------------------------|
-| google.feature   | google-config.yaml      |
-| user-api.feature | user-api-config.yaml    |
-| orders.feature   | orders-config.yaml      |
+| Feature File     | Feature-Specific Config      |
+|------------------|------------------------------|
+| google.feature   | google-config-api.yaml       |
+| user-api.feature | user-api-config-api.yaml     |
+| orders.feature   | orders-config-api.yaml       |
 
-**Rule:** For feature file `{name}.feature`, the override config is `{name}-config.yaml` (e.g., `google.feature` → `google-config.yaml`).
+**Rule:** For feature file `{name}.feature`, the override config is `{name}-config-api.yaml`.
 
 ### Example
 
-**master.yaml** (base for all features):
+**master-api.yaml** (base for all features):
 ```yaml
 application:
   url: https://api.example.com
@@ -190,7 +191,7 @@ auth:
   type: bearer
 ```
 
-**google-config.yaml** (override when running `google.feature`):
+**google-config-api.yaml** (override when running `google.feature`):
 ```yaml
 application:
   url: https://www.google.com  # Overrides master
@@ -198,20 +199,21 @@ application:
 ```
 
 ### Resolution Logic
-1. Load `master.yaml` (base config—always used)
-2. If current feature is `google.feature`, look for `google-config.yaml`
-3. If `google-config.yaml` **exists** → merge: feature-specific values override master; unset values inherit from master
-4. If `google-config.yaml` **does not exist** → use `master.yaml` as-is
+1. Load `config/{profile}/master-api.yaml` (base config)
+2. If current feature is `google.feature`, look for `config/{profile}/google-config-api.yaml`
+3. If `google-config-api.yaml` **exists** → merge: feature-specific values override master
+4. If **does not exist** → use `master-api.yaml` as-is
 5. Use resolved config for base URL, headers, timeout, etc.
 
 ### Config Location
 ```
 src/test/resources/
-├── config/
-│   ├── master.yaml
-│   ├── google-config.yaml
-│   ├── user-api-config.yaml
-│   └── orders-config.yaml
+└── config/
+    └── {profile}/           # local, dev, qa, etc.
+        ├── master-api.yaml
+        ├── google-config-api.yaml
+        ├── user-api-config-api.yaml
+        └── orders-config-api.yaml
 ```
 
 ### Usage in Step Definitions

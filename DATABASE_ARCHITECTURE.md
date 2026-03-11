@@ -182,34 +182,33 @@ Template                    InterceptorRunner              DBTestRunner         
 
 ## Database Configuration
 
-**Principle:** DB credentials and connection details are not embedded in feature files. Config is referenced by name (e.g. `"mysql"`, `"oracle"`) in steps. Profile is passed via `-Dprofile=dev` (Option B: profile as folder).
+**Principle:** DB credentials and connection details are not embedded in feature files. Config is referenced by name (e.g. `"mysql"`, `"oracle"`) in steps. All config lives inside profile folders. Default profile is `local` when no `-Dprofile` is passed.
 
 ### Config Hierarchy
 
 | Level | Source | Purpose |
 |-------|--------|---------|
-| 1 | `master_database.yml` | Base configs (mysql, oracle, postgresql, etc.) |
-| 2 | `config/{profile}/master_database.yml` | Profile override (when `-Dprofile=X`) |
-| 3 | `{feature-name}-database.yml` | Optional overrides for that feature |
-| 4 | `config/{profile}/{feature}-database.yml` | Profile + feature override |
-| 5 | `sections` (in feature yml) | Optional overrides keyed by scenario name |
+| 1 | `config/{profile}/master_database.yml` | Master DB config (profile = local, dev, qa, etc.) |
+| 2 | `config/{profile}/{feature}-database.yml` | Feature override |
+| 3 | `sections` (in feature yml) | Scenario-level override keyed by scenario name |
 
-### Config File Location (Option B: Profile as Folder)
+### Config File Location (Profile-Only)
+
+No config at `config/` root. All inside profile folders:
 
 ```
 src/test/resources/
 └── config/
-    ├── master_database.yml           # Base (always loaded)
-    ├── cross-db-database.yml         # For cross-db.feature
-    ├── user-db-database.yml          # For user-db.feature
-    │
-    ├── dev/                          # Profile: -Dprofile=dev
+    ├── local/                     # Default when no -Dprofile
+    │   ├── master_database.yml
+    │   ├── master-api.yaml
+    │   └── cross-db-database.yml
+    ├── dev/
     │   ├── master_database.yml
     │   └── cross-db-database.yml
-    ├── qa/
-    │   └── master_database.yml
-    └── staging/
-        └── master_database.yml
+    └── qa/
+        ├── master_database.yml
+        └── master.yaml
 ```
 
 See [CONFIGURATION.md](CONFIGURATION.md) for full profile documentation.
@@ -233,25 +232,22 @@ See [CONFIGURATION.md](CONFIGURATION.md) for full profile documentation.
 
 ```
 Step: I connect to database "mysql"
+   Profile = -Dprofile or "local" (default)
                 │
                 ▼
 ┌───────────────────────────────────────────────────────────────────┐
-│  1. Load master_database.yml → base "mysql" config                 │
-│  2. If -Dprofile=X: load config/{profile}/master_database.yml      │
-│     → merge into base                                              │
+│  1. Load config/{profile}/master_database.yml → base "mysql"       │
 └───────────────────────────────────────────────────────────────────┘
                 │
                 ▼
 ┌───────────────────────────────────────────────────────────────────┐
-│  3. Load {feature-name}-database.yml (if exists)                   │
-│  4. If -Dprofile=X: load config/{profile}/{feature}-database.yml   │
-│     → merge overrides into "mysql"                                 │
+│  2. Load config/{profile}/{feature}-database.yml (if exists)       │
+│     → merge into "mysql"                                           │
 └───────────────────────────────────────────────────────────────────┘
                 │
                 ▼
 ┌───────────────────────────────────────────────────────────────────┐
-│  5. If current scenario name matches a key under "sections"        │
-│     → merge section overrides for "mysql"                          │
+│  3. If scenario name matches "sections" key → merge section        │
 └───────────────────────────────────────────────────────────────────┘
                 │
                 ▼

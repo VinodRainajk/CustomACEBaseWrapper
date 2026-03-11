@@ -1,0 +1,3 @@
+application:
+  url: https://preprod-api.example.com
+  timeout: 30000

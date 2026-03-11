@@ -1,12 +1,33 @@
-# config/dev/master_database.yml - Dev profile overrides
-# Used when: mvn test -Dprofile=dev
+# config/dev/ - mvn test -Dprofile=dev
 
 mysql:
+  type: mysql
   url: jdbc:mysql://localhost:3306/testdb_dev
   username: dev_user
   password: dev_pass
+  driver: com.mysql.cj.jdbc.Driver
+  timeout: 30000
 
 mysql-world:
+  type: mysql
   url: jdbc:mysql://localhost:3306/world
   username: dev
   password: admin
+  driver: com.mysql.cj.jdbc.Driver
+  timeout: 30000
+
+postgresql:
+  type: postgresql
+  url: jdbc:postgresql://localhost:5432/testdb_dev
+  username: dev
+  password: dev_pass
+  driver: org.postgresql.Driver
+  timeout: 30000
+
+oracle:
+  type: oracle
+  url: jdbc:oracle:thin:@localhost:1521:xe
+  username: dev
+  password: admin
+  driver: oracle.jdbc.OracleDriver
+  timeout: 30000

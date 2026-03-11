@@ -1,0 +1,3 @@
+application:
+  url: https://staging-api.example.com
+  timeout: 30000

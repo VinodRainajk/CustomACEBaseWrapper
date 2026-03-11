@@ -1,0 +1,11 @@
+# config/preprod/ - mvn test -Dprofile=preprod
+
+mysql:
+  url: jdbc:mysql://preprod-db-host:3306/testdb
+  username: preprod_user
+  password: preprod_pass
+
+mysql-world:
+  url: jdbc:mysql://preprod-db-host:3306/world
+  username: preprod_user
+  password: preprod_pass

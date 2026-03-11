@@ -1,5 +1,3 @@
-# master_database.yml - Base database configurations (Level 1)
-
 mysql:
   type: mysql
   url: jdbc:mysql://localhost:3306/testdb

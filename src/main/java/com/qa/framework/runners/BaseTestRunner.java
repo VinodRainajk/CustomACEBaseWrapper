@@ -7,12 +7,12 @@ import org.junit.platform.suite.api.Suite;
 
 import static io.cucumber.junit.platform.engine.Constants.GLUE_PROPERTY_NAME;
 import static io.cucumber.junit.platform.engine.Constants.PLUGIN_PROPERTY_NAME;
-import static io.cucumber.junit.platform.engine.Constants.FEATURES_PROPERTY_NAME;
 
 /**
  * Base Test Runner - Routes to appropriate step definitions based on tags.
  * This is the main interceptor/router for all test types.
- * 
+ * Uses @SelectClasspathResource for features (do not set cucumber.features - it overrides JUnit selectors).
+ *
  * Supports multiple test types:
  * - @DB - Database tests (routes to com.qa.framework.stepdefinitions.db)
  * - @UI - UI tests (routes to your UI library step definitions)
@@ -21,7 +21,6 @@ import static io.cucumber.junit.platform.engine.Constants.FEATURES_PROPERTY_NAME
 @Suite
 @IncludeEngines("cucumber")
 @SelectClasspathResource("features")
-@ConfigurationParameter(key = FEATURES_PROPERTY_NAME, value = "src/test/resources/features")
 @ConfigurationParameter(
     key = GLUE_PROPERTY_NAME, 
     value = "com.qa.framework.stepdefinitions.db," +
