@@ -9,7 +9,7 @@ import io.cucumber.java.en.When;
 /**
  * Placeholder step definitions for UI tests.
  * Add your UI step implementations here.
- * Used by UITestRunner (ACBase) - glue path: com.qa.framework.stepdefinitions.ui
+ * Loaded by UIAPITestNGRunner (glue: com.qa.framework.stepdefinitions.ui).
  */
 public class UIStepDefinitions {
 

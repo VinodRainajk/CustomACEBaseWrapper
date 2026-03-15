@@ -80,11 +80,23 @@
             <version>23.3.0.23.09</version>
         </dependency>
 
-        <!-- ACEBase - UI and API runners (step definitions remain in this project) -->
+        <!-- ACEBase - TestNGRunner, glue, driver lifecycle (step definitions remain in this project) -->
         <dependency>
             <groupId>com.acebase</groupId>
             <artifactId>ace-base</artifactId>
             <version>1.0.0</version>
+        </dependency>
+
+        <!-- TestNG for UI/API runner (extends ace-base TestNGRunner) -->
+        <dependency>
+            <groupId>io.cucumber</groupId>
+            <artifactId>cucumber-testng</artifactId>
+            <version>${cucumber.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
+            <version>7.8.0</version>
         </dependency>
 
         <!-- API Testing - RestAssured -->
