@@ -25,7 +25,8 @@ import static io.cucumber.junit.platform.engine.Constants.PLUGIN_PROPERTY_NAME;
     key = GLUE_PROPERTY_NAME, 
     value = "com.qa.framework.stepdefinitions.db," +
             "com.qa.framework.stepdefinitions.ui," +
-            "com.qa.framework.stepdefinitions.api"
+            "com.qa.framework.stepdefinitions.api," +
+            "com.qa.framework.payload"
 )
 @ConfigurationParameter(
     key = PLUGIN_PROPERTY_NAME, 

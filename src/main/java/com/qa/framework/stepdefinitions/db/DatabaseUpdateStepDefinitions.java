@@ -1,5 +1,7 @@
 package com.qa.framework.stepdefinitions.db;
 
+import com.qa.framework.db.PendingStatementExecutor;
+import com.qa.framework.payload.FeaturePayloadLoader;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 
@@ -14,6 +16,17 @@ public class DatabaseUpdateStepDefinitions {
 
     private DatabaseStepContext ctx() {
         return DatabaseStepContext.getInstance();
+    }
+
+    /** Uses SQL set via {@code When I set the SQL statement from feature payload "..."}. */
+    @When("I execute the update")
+    public void iExecuteTheUpdateUsingPendingStatement() {
+        PendingStatementExecutor.executePendingStatement(ctx(), "update", null);
+    }
+
+    @When("I execute the update query from feature payload {string}")
+    public void iExecuteTheUpdateQueryFromFeaturePayload(String payloadKey) {
+        iExecuteTheUpdateQuery(FeaturePayloadLoader.getString(payloadKey));
     }
 
     @When("I execute the update query {string}")
@@ -47,5 +60,10 @@ public class DatabaseUpdateStepDefinitions {
     @Then("the update should execute successfully")
     public void theUpdateShouldExecuteSuccessfully() {
         assertNull(ctx().getLastException(), "Update should execute without exception");
+    }
+
+    @Then("the update should succeed")
+    public void theUpdateShouldSucceed() {
+        theUpdateShouldExecuteSuccessfully();
     }
 }

@@ -1,6 +1,8 @@
 package com.qa.framework.stepdefinitions.db;
 
 import com.qa.framework.db.DatabaseConnection;
+import com.qa.framework.db.PendingStatementExecutor;
+import com.qa.framework.payload.FeaturePayloadLoader;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 
@@ -18,9 +20,54 @@ public class DatabaseSelectStepDefinitions {
         return DatabaseStepContext.getInstance();
     }
 
+    /** Uses SQL set via {@code When I set the SQL statement from feature payload "..."}. */
+    @When("I execute the query")
+    public void iExecuteTheQueryUsingPendingStatement() {
+        PendingStatementExecutor.executePendingStatement(ctx(), "select", null);
+    }
+
+    @When("I execute the query on {string}")
+    public void iExecuteTheQueryOnUsingPendingStatement(String connectionName) {
+        PendingStatementExecutor.executePendingStatement(ctx(), "select", connectionName);
+    }
+
+    /** Uses prepared statement set via {@code When I set the prepared statement from feature payload "..."}. */
+    @When("I execute the prepared query")
+    public void iExecuteThePreparedQueryUsingPendingStatement() {
+        PendingStatementExecutor.executePendingPreparedStatement(ctx(), null);
+    }
+
+    @When("I execute the prepared query on {string}")
+    public void iExecuteThePreparedQueryOnUsingPendingStatement(String connectionName) {
+        PendingStatementExecutor.executePendingPreparedStatement(ctx(), connectionName);
+    }
+
     @When("I execute the query {string}")
     public void iExecuteTheQuery(String query) {
         iExecuteTheQueryOn(query, null);
+    }
+
+    /**
+     * SQL text lives in {@code payloads/features/{feature}_payload.yml} under a dotted key (e.g. {@code queries.count_cities}).
+     */
+    @When("I execute the query from feature payload {string}")
+    public void iExecuteTheQueryFromFeaturePayload(String payloadKey) {
+        iExecuteTheQuery(FeaturePayloadLoader.getString(payloadKey));
+    }
+
+    @When("I execute the query from feature payload {string} on {string}")
+    public void iExecuteTheQueryFromFeaturePayloadOn(String payloadKey, String connectionName) {
+        iExecuteTheQueryOn(FeaturePayloadLoader.getString(payloadKey), connectionName);
+    }
+
+    /**
+     * Prepared block in YAML under {@code prepared.{key}} with {@code query} and {@code parameters} list.
+     */
+    @When("I execute the prepared query from feature payload {string}")
+    public void iExecuteThePreparedQueryFromFeaturePayload(String preparedKey) {
+        String query = FeaturePayloadLoader.getPreparedQuery(preparedKey);
+        List<String> params = FeaturePayloadLoader.getPreparedParameters(preparedKey);
+        iExecuteThePreparedQueryWithParameters(query, params);
     }
 
     @When("I execute the query {string} on {string}")
@@ -82,6 +129,16 @@ public class DatabaseSelectStepDefinitions {
         assertNotNull(ctx().getQueryResults(), "Query results should not be null");
         assertTrue(ctx().getQueryResults().size() <= maxRowCount,
                 "Expected at most " + maxRowCount + " rows but got " + ctx().getQueryResults().size());
+    }
+
+    @Then("the result should have at least {int} row")
+    public void theResultShouldHaveAtLeastRow(int minRowCount) {
+        theQueryShouldReturnAtLeastRows(minRowCount);
+    }
+
+    @Then("the result should have exactly {int} row")
+    public void theResultShouldHaveExactlyRow(int expectedRowCount) {
+        theQueryShouldReturnRows(expectedRowCount);
     }
 
     @Then("the query should return no rows")

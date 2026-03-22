@@ -4,12 +4,17 @@ import java.util.Map;
 
 /**
  * API configuration model. Supports nested structure from YAML.
+ * <p>
+ * After load, {@link #getMergedRoot()} holds the deep-merged YAML map for dotted-path lookups
+ * (e.g. {@code paths.users}, {@code application.url}).
  */
 public class APIConfig {
 
     private Application application;
     private Auth auth;
     private Map<String, Object> custom;
+    /** Deep-merged master + feature API YAML; used for dotted config keys in steps. */
+    private Map<String, Object> mergedRoot;
 
     public Application getApplication() {
         return application;
@@ -33,6 +38,14 @@ public class APIConfig {
 
     public void setCustom(Map<String, Object> custom) {
         this.custom = custom;
+    }
+
+    public Map<String, Object> getMergedRoot() {
+        return mergedRoot;
+    }
+
+    public void setMergedRoot(Map<String, Object> mergedRoot) {
+        this.mergedRoot = mergedRoot;
     }
 
     public static class Application {

@@ -17,7 +17,9 @@ import static io.cucumber.junit.platform.engine.Constants.FILTER_TAGS_PROPERTY_N
 @Suite
 @IncludeEngines("cucumber")
 @SelectClasspathResource("features")
-@ConfigurationParameter(key = GLUE_PROPERTY_NAME, value = "com.qa.framework.stepdefinitions.db")
+@ConfigurationParameter(
+        key = GLUE_PROPERTY_NAME,
+        value = "com.qa.framework.stepdefinitions.db,com.qa.framework.payload")
 @ConfigurationParameter(key = FILTER_TAGS_PROPERTY_NAME, value = "@DB")
 @ConfigurationParameter(
     key = PLUGIN_PROPERTY_NAME, 

@@ -22,7 +22,8 @@ import io.cucumber.testng.CucumberOptions;
     glue = {
         "com.acebase.glue",
         "com.qa.framework.stepdefinitions.ui",
-        "com.qa.framework.stepdefinitions.api"
+        "com.qa.framework.stepdefinitions.api",
+        "com.qa.framework.payload"
     }
 )
 public class UIAPITestNGRunner extends TestNGRunner {

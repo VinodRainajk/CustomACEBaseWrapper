@@ -1,5 +1,7 @@
 package com.qa.framework.stepdefinitions.db;
 
+import com.qa.framework.db.PendingStatementExecutor;
+import com.qa.framework.payload.FeaturePayloadLoader;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 
@@ -14,6 +16,17 @@ public class DatabaseDeleteStepDefinitions {
 
     private DatabaseStepContext ctx() {
         return DatabaseStepContext.getInstance();
+    }
+
+    /** Uses SQL set via {@code When I set the SQL statement from feature payload "..."}. */
+    @When("I execute the delete")
+    public void iExecuteTheDeleteUsingPendingStatement() {
+        PendingStatementExecutor.executePendingStatement(ctx(), "delete", null);
+    }
+
+    @When("I execute the delete query from feature payload {string}")
+    public void iExecuteTheDeleteQueryFromFeaturePayload(String payloadKey) {
+        iExecuteTheDeleteQuery(FeaturePayloadLoader.getString(payloadKey));
     }
 
     @When("I execute the delete query {string}")
@@ -61,5 +74,10 @@ public class DatabaseDeleteStepDefinitions {
     @Then("the delete should execute successfully")
     public void theDeleteShouldExecuteSuccessfully() {
         assertNull(ctx().getLastException(), "Delete should execute without exception");
+    }
+
+    @Then("the delete should succeed")
+    public void theDeleteShouldSucceed() {
+        theDeleteShouldExecuteSuccessfully();
     }
 }
