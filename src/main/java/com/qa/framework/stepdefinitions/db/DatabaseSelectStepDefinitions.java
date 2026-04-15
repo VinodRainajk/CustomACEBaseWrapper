@@ -2,7 +2,9 @@ package com.qa.framework.stepdefinitions.db;
 
 import com.qa.framework.db.DatabaseConnection;
 import com.qa.framework.db.PendingStatementExecutor;
+import com.qa.framework.exceptions.WrapperException;
 import com.qa.framework.payload.FeaturePayloadLoader;
+import com.qa.framework.utils.PollingUtils;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 
@@ -73,11 +75,12 @@ public class DatabaseSelectStepDefinitions {
     @When("I execute the query {string} on {string}")
     public void iExecuteTheQueryOn(String query, String connectionName) {
         try {
+            String resolved = FeaturePayloadLoader.resolveBracedPayloadOrLiteral(query);
             DatabaseConnection conn = connectionName != null && !connectionName.isEmpty()
                     ? ctx().getDbManager().getConnection(connectionName)
                     : ctx().getCurrentConnection();
             assertNotNull(conn, "No connection found" + (connectionName != null ? " for: " + connectionName : ""));
-            List<Map<String, Object>> results = conn.executeQuery(query);
+            List<Map<String, Object>> results = conn.executeQuery(resolved);
             ctx().setQueryResults(results);
             ctx().setLastException(null);
             if (connectionName != null) {
@@ -92,7 +95,8 @@ public class DatabaseSelectStepDefinitions {
     @When("I execute the prepared query {string} with parameters:")
     public void iExecuteThePreparedQueryWithParameters(String query, List<String> parameters) {
         try {
-            ctx().setQueryResults(ctx().getCurrentConnection().executePreparedQuery(query, parameters.toArray()));
+            String resolved = FeaturePayloadLoader.resolveBracedPayloadOrLiteral(query);
+            ctx().setQueryResults(ctx().getCurrentConnection().executePreparedQuery(resolved, parameters.toArray()));
             ctx().setLastException(null);
         } catch (Exception e) {
             ctx().setLastException(e);
@@ -103,7 +107,8 @@ public class DatabaseSelectStepDefinitions {
     public void iExecuteThePreparedQueryWithParameters(String query, String paramList) {
         String[] params = paramList.split(",\\s*");
         try {
-            ctx().setQueryResults(ctx().getCurrentConnection().executePreparedQuery(query, (Object[]) params));
+            String resolved = FeaturePayloadLoader.resolveBracedPayloadOrLiteral(query);
+            ctx().setQueryResults(ctx().getCurrentConnection().executePreparedQuery(resolved, (Object[]) params));
             ctx().setLastException(null);
         } catch (Exception e) {
             ctx().setLastException(e);
@@ -248,5 +253,31 @@ public class DatabaseSelectStepDefinitions {
         Map<String, Object> row = ctx().getQueryResults().get(rowIndex - 1);
         assertTrue(row.containsKey(columnName), "Column '" + columnName + "' should exist");
         assertEquals(expectedValue, String.valueOf(row.get(columnName)), "Column value mismatch");
+    }
+
+    @Then("I wait up to {int} seconds for query {string} to return at least {int} rows, checking every {int} milliseconds")
+    public void iWaitUpToSecondsForQueryToReturnAtLeastRowsCheckingEveryMilliseconds(
+            int timeoutSeconds,
+            String query,
+            int minRows,
+            int intervalMillis
+    ) {
+        String resolvedQuery = FeaturePayloadLoader.resolveBracedPayloadOrLiteral(query);
+        DatabaseConnection conn = ctx().getCurrentConnection();
+        if (conn == null) {
+            throw new WrapperException("No active database connection found for polling.");
+        }
+
+        PollingUtils.pollUntil(
+                timeoutSeconds,
+                intervalMillis,
+                "query [" + query + "] to return at least " + minRows + " rows",
+                () -> {
+                    List<Map<String, Object>> results = conn.executeQuery(resolvedQuery);
+                    ctx().setQueryResults(results);
+                    int size = results == null ? 0 : results.size();
+                    return PollingUtils.PollOutcome.of(size >= minRows, "rowCount=" + size);
+                }
+        );
     }
 }

@@ -1,4 +1,3 @@
-@API
 Feature: Users API using feature payload YAML
 
   Base URL comes from merged API config; paths and JSON bodies live in users-api_payload.yml.
@@ -6,7 +5,7 @@ Feature: Users API using feature payload YAML
   Background:
     Given the API base URL from config
 
-  Scenario: Create user with body from payload YAML
+  Scenario: Create user with body loaded from JSON file via payload YAML
     When I set the body from feature payload "bodies.create_user"
     And I send a POST request to path from feature payload "paths.users"
     Then the response status code should be 201

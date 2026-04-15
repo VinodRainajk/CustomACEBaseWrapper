@@ -12,7 +12,7 @@ import io.cucumber.java.Scenario;
  */
 public class APIHooks {
 
-    @Before("@API")
+    @Before
     public void setUp(Scenario scenario) {
         String featureUri = scenario.getUri() != null ? scenario.getUri().toString() : null;
         String featureName = APIConfigLoader.extractFeatureName(featureUri);
@@ -25,7 +25,7 @@ public class APIHooks {
         }
     }
 
-    @After("@API")
+    @After
     public void tearDown() {
         APIStepContext.reset();
     }

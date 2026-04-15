@@ -1,5 +1,6 @@
 package com.qa.framework.stepdefinitions.db;
 
+import com.qa.framework.payload.FeaturePayloadLoader;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 
@@ -18,7 +19,8 @@ public class DatabaseFunctionStepDefinitions {
     @When("I call the function using query {string}")
     public void iCallTheFunctionUsingQuery(String query) {
         try {
-            ctx().setQueryResults(ctx().getCurrentConnection().executeQuery(query));
+            String resolved = FeaturePayloadLoader.resolveBracedPayloadOrLiteral(query);
+            ctx().setQueryResults(ctx().getCurrentConnection().executeQuery(resolved));
             ctx().setLastException(null);
         } catch (Exception e) {
             ctx().setLastException(e);

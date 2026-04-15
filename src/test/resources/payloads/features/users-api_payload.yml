@@ -1,0 +1,23 @@
+paths:
+  users: /users
+  user_by_id: /users/1
+
+bodies:
+  # Example: file-backed API payload
+  create_user:
+    file: users/create-user.json
+
+  # Examples: inline payloads
+  update_user:
+    inline: |
+      {
+        "id": 1,
+        "name": "Updated User",
+        "username": "updated-user",
+        "email": "updated@example.com"
+      }
+  patch_user:
+    inline: |
+      {
+        "name": "Patched User"
+      }

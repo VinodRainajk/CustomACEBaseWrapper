@@ -1,0 +1,5 @@
+queries:
+  from_file:
+    file: demo/query.sql
+  dynamic_insert: "INSERT INTO t (id,email) VALUES ('${auto.uuid->vars.demo_id}','${auto.email->vars.demo_email}')"
+  dynamic_verify: "SELECT * FROM t WHERE id='${vars.demo_id}' AND email='${vars.demo_email}'"

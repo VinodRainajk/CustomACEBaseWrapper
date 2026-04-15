@@ -1,0 +1,39 @@
+api:
+  application:
+    url: https://jsonplaceholder.typicode.com
+    timeout: 30000
+  auth:
+    type: none
+  paths:
+    users: /users
+    user_by_id: /users/1
+
+db:
+  mysql:
+    type: mysql
+    url: jdbc:mysql://localhost:3306/testdb_dev
+    username: dev_user
+    password: dev_pass
+    driver: com.mysql.cj.jdbc.Driver
+    timeout: 30000
+  mysql-world:
+    type: mysql
+    url: jdbc:mysql://localhost:3306/world
+    username: dev_user
+    password: dev_pass
+    driver: com.mysql.cj.jdbc.Driver
+    timeout: 30000
+  postgresql:
+    type: postgresql
+    url: jdbc:postgresql://localhost:5432/testdb_dev
+    username: dev_user
+    password: dev_pass
+    driver: org.postgresql.Driver
+    timeout: 30000
+  oracle:
+    type: oracle
+    url: jdbc:oracle:thin:@localhost:1521:xe
+    username: dev_user
+    password: dev_pass
+    driver: oracle.jdbc.OracleDriver
+    timeout: 30000

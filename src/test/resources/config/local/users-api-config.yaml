@@ -1,0 +1,14 @@
+api:
+  # Feature-level override example:
+  # this would override api.application.url from master-config.yaml
+  application:
+    url: https://jsonplaceholder.typicode.com
+  paths:
+    users: /users
+    user_by_id: /users/1
+
+db:
+  # Feature-level DB override example for this feature
+  mysql:
+    username: users_feature_local_user
+    password: users_feature_local_pass

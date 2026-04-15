@@ -32,7 +32,8 @@ public class DatabaseDeleteStepDefinitions {
     @When("I execute the delete query {string}")
     public void iExecuteTheDeleteQuery(String query) {
         try {
-            int count = ctx().getCurrentConnection().executeUpdate(query);
+            String resolved = FeaturePayloadLoader.resolveBracedPayloadOrLiteral(query);
+            int count = ctx().getCurrentConnection().executeUpdate(resolved);
             ctx().setDeleteCount(count);
             ctx().setUpdateCount(count);
             ctx().setLastException(null);

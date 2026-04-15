@@ -1,71 +1,45 @@
 package com.qa.framework.db;
 
-import com.qa.framework.config.ConfigurationManager;
-import com.qa.framework.config.DatabaseConfig;
+import java.util.Map;
 
 /**
- * Factory class for creating database connections from configuration profiles.
+ * Factory class for creating database connections from unified YAML configuration.
  */
 public class DatabaseConnectionFactory {
-    
-    /**
-     * Create a database connection using the active profile.
-     * 
-     * @return DatabaseConnection configured with active profile settings
-     */
-    public static DatabaseConnection createConnection() {
-        ConfigurationManager configManager = ConfigurationManager.getInstance();
-        DatabaseConfig config = configManager.getActiveConfiguration();
-        return createConnection(config);
+
+    private static final String DEFAULT_DB_CONFIG_NAME = "mysql";
+
+    private DatabaseConnectionFactory() {
     }
-    
+
     /**
-     * Create a database connection using a specific profile.
-     * 
-     * @param profile the configuration profile name (mysql, postgresql, sqlserver, oracle)
-     * @return DatabaseConnection configured with the specified profile settings
+     * Create a connection using db.{configName} from unified config.
      */
-    public static DatabaseConnection createConnectionFromProfile(String profile) {
-        ConfigurationManager configManager = ConfigurationManager.getInstance();
-        DatabaseConfig config = configManager.loadConfiguration(profile);
-        return createConnection(config);
+    public static DatabaseConnection createConnection(String configName, String featureName, String scenarioName) {
+        Map<String, Object> config = DatabaseConfigLoader.resolveConfig(configName, featureName, scenarioName);
+        return DatabaseConfigLoader.createConnectionFromResolvedConfig(config);
     }
-    
+
     /**
-     * Create a database connection from a DatabaseConfig object.
-     * 
-     * @param config the database configuration
-     * @return DatabaseConnection configured with the provided settings
+     * Create a connection using default DB config name (mysql).
      */
-    public static DatabaseConnection createConnection(DatabaseConfig config) {
-        String url = config.getUrl();
-        String username = config.getUsername();
-        String password = config.getPassword();
-        String driver = config.getDriver();
-        
-        return new DatabaseConnection(url, username, password, driver);
+    public static DatabaseConnection createConnection(String featureName, String scenarioName) {
+        return createConnection(DEFAULT_DB_CONFIG_NAME, featureName, scenarioName);
     }
-    
+
     /**
-     * Create and connect to a database using the active profile.
-     * 
-     * @return connected DatabaseConnection
+     * Create and connect using db.{configName} from unified config.
      */
-    public static DatabaseConnection createAndConnect() {
-        DatabaseConnection connection = createConnection();
+    public static DatabaseConnection createAndConnect(String configName, String featureName, String scenarioName) {
+        DatabaseConnection connection = createConnection(configName, featureName, scenarioName);
         connection.connect();
         return connection;
     }
-    
+
     /**
-     * Create and connect to a database using a specific profile.
-     * 
-     * @param profile the configuration profile name
-     * @return connected DatabaseConnection
+     * Create and connect using default DB config name (mysql).
      */
-    public static DatabaseConnection createAndConnectFromProfile(String profile) {
-        DatabaseConnection connection = createConnectionFromProfile(profile);
-        connection.connect();
-        return connection;
+    public static DatabaseConnection createAndConnect(String featureName, String scenarioName) {
+        return createAndConnect(DEFAULT_DB_CONFIG_NAME, featureName, scenarioName);
     }
 }

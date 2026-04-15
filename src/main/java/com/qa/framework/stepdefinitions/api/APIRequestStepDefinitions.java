@@ -68,7 +68,7 @@ public class APIRequestStepDefinitions {
 
     /** Relative path from merged API YAML (e.g. {@code paths.users}); base URL from {@code @API} hook or Background. */
 
-    @When("I send a GET request to path from API config {string}")
+    @When("git I send a GET request to path from API config {string}")
 
     public void iSendAGetRequestToPathFromApiConfig(String pathConfigKey) {
 
@@ -365,7 +365,7 @@ public class APIRequestStepDefinitions {
         clearPendingBodyBeforeStatelessRequest();
 
         try {
-
+            rememberLastRequest("GET", endpoint, null);
             String url = buildUrl(endpoint);
 
             Response resp = given().when().get(url);
@@ -389,7 +389,7 @@ public class APIRequestStepDefinitions {
     public void iSendAPostRequestTo(String endpoint) {
 
         try {
-
+            rememberLastRequest("POST", endpoint, null);
             String url = buildUrl(endpoint);
 
             Response resp = given().contentType(ContentType.JSON).when().post(url);
@@ -413,9 +413,8 @@ public class APIRequestStepDefinitions {
     public void iSendAPostRequestWithPayload(String endpoint, String payloadPath) {
 
         try {
-
             String body = PayloadLoader.loadPayload(payloadPath);
-
+            rememberLastRequest("POST", endpoint, body);
             String url = buildUrl(endpoint);
 
             Response resp = given()
@@ -447,7 +446,7 @@ public class APIRequestStepDefinitions {
     public void iSendAPutRequestTo(String endpoint) {
 
         try {
-
+            rememberLastRequest("PUT", endpoint, null);
             String url = buildUrl(endpoint);
 
             Response resp = given().contentType(ContentType.JSON).when().put(url);
@@ -471,9 +470,8 @@ public class APIRequestStepDefinitions {
     public void iSendAPutRequestWithPayload(String endpoint, String payloadPath) {
 
         try {
-
             String body = PayloadLoader.loadPayload(payloadPath);
-
+            rememberLastRequest("PUT", endpoint, body);
             String url = buildUrl(endpoint);
 
             Response resp = given()
@@ -505,9 +503,8 @@ public class APIRequestStepDefinitions {
     public void iSendAPatchRequestWithPayload(String endpoint, String payloadPath) {
 
         try {
-
             String body = PayloadLoader.loadPayload(payloadPath);
-
+            rememberLastRequest("PATCH", endpoint, body);
             String url = buildUrl(endpoint);
 
             Response resp = given()
@@ -541,7 +538,7 @@ public class APIRequestStepDefinitions {
         clearPendingBodyBeforeStatelessRequest();
 
         try {
-
+            rememberLastRequest("DELETE", endpoint, null);
             String url = buildUrl(endpoint);
 
             Response resp = given().when().delete(url);
@@ -605,7 +602,7 @@ public class APIRequestStepDefinitions {
     private void runJsonRequest(String httpMethod, String endpointPath, String bodyJson) {
 
         try {
-
+            rememberLastRequest(httpMethod, endpointPath, bodyJson);
             String url = buildUrl(endpointPath);
 
             String body = bodyJson != null ? bodyJson : "{}";
@@ -679,7 +676,10 @@ public class APIRequestStepDefinitions {
         }
 
         return url.endsWith("/") ? url.substring(0, url.length() - 1) : url;
+    }
 
+    private void rememberLastRequest(String method, String endpoint, String body) {
+        ctx().setLastApiRequest(new APIStepContext.LastApiRequest(method, endpoint, body));
     }
 
 }

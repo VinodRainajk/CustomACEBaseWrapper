@@ -32,7 +32,8 @@ public class DatabaseUpdateStepDefinitions {
     @When("I execute the update query {string}")
     public void iExecuteTheUpdateQuery(String query) {
         try {
-            int count = ctx().getCurrentConnection().executeUpdate(query);
+            String resolved = FeaturePayloadLoader.resolveBracedPayloadOrLiteral(query);
+            int count = ctx().getCurrentConnection().executeUpdate(resolved);
             ctx().setUpdateCount(count);
             ctx().setLastException(null);
         } catch (Exception e) {

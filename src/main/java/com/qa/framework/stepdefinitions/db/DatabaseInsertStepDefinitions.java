@@ -32,7 +32,8 @@ public class DatabaseInsertStepDefinitions {
     @When("I execute the insert query {string}")
     public void iExecuteTheInsertQuery(String query) {
         try {
-            int count = ctx().getCurrentConnection().executeUpdate(query);
+            String resolved = FeaturePayloadLoader.resolveBracedPayloadOrLiteral(query);
+            int count = ctx().getCurrentConnection().executeUpdate(resolved);
             ctx().setInsertCount(count);
             ctx().setUpdateCount(count);
             ctx().setLastException(null);

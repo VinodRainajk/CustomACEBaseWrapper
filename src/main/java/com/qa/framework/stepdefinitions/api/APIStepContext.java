@@ -18,6 +18,31 @@ public class APIStepContext {
     private Response lastResponse;
     private Map<String, String> variables = new HashMap<>();
     private Exception lastException;
+    private LastApiRequest lastApiRequest;
+
+    public static final class LastApiRequest {
+        private final String method;
+        private final String endpoint;
+        private final String body;
+
+        public LastApiRequest(String method, String endpoint, String body) {
+            this.method = method;
+            this.endpoint = endpoint;
+            this.body = body;
+        }
+
+        public String getMethod() {
+            return method;
+        }
+
+        public String getEndpoint() {
+            return endpoint;
+        }
+
+        public String getBody() {
+            return body;
+        }
+    }
 
     public static APIStepContext getInstance() {
         return INSTANCE.get();
@@ -69,5 +94,13 @@ public class APIStepContext {
 
     public void setLastException(Exception lastException) {
         this.lastException = lastException;
+    }
+
+    public LastApiRequest getLastApiRequest() {
+        return lastApiRequest;
+    }
+
+    public void setLastApiRequest(LastApiRequest lastApiRequest) {
+        this.lastApiRequest = lastApiRequest;
     }
 }

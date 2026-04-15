@@ -1,6 +1,5 @@
 package com.qa.framework.stepdefinitions.db;
 
-import com.qa.framework.config.ConfigurationManager;
 import com.qa.framework.db.DatabaseConfigLoader;
 import com.qa.framework.db.DatabaseManager;
 import io.cucumber.java.After;
@@ -13,17 +12,16 @@ import io.cucumber.java.Scenario;
  */
 public class DatabaseHooks {
 
-    @Before("@DB")
+    @Before
     public void setUp(Scenario scenario) {
         DatabaseStepContext ctx = DatabaseStepContext.getInstance();
         ctx.setDbManager(DatabaseManager.getInstance());
-        ctx.setConfigManager(ConfigurationManager.getInstance());
         String featureUri = scenario.getUri() != null ? scenario.getUri().toString() : null;
         ctx.setFeatureName(DatabaseConfigLoader.extractFeatureName(featureUri));
         ctx.setScenarioName(scenario.getName());
     }
 
-    @After("@DB")
+    @After
     public void tearDown() {
         DatabaseManager dbManager = DatabaseStepContext.getInstance().getDbManager();
         if (dbManager != null) {

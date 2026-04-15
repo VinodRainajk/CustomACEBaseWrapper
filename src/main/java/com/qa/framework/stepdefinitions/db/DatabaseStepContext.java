@@ -1,8 +1,8 @@
 package com.qa.framework.stepdefinitions.db;
 
-import com.qa.framework.config.ConfigurationManager;
 import com.qa.framework.db.DatabaseConnection;
 import com.qa.framework.db.DatabaseManager;
+import com.qa.framework.utils.CsvResultComparator;
 
 import java.util.HashMap;
 import java.util.List;
@@ -18,7 +18,6 @@ public class DatabaseStepContext {
     private static final ThreadLocal<DatabaseStepContext> INSTANCE = ThreadLocal.withInitial(DatabaseStepContext::new);
 
     private DatabaseManager dbManager;
-    private ConfigurationManager configManager;
     private DatabaseConnection currentConnection;
     private String featureName;
     private String scenarioName;
@@ -31,6 +30,31 @@ public class DatabaseStepContext {
     private Exception lastException;
     private Object procedureResult;
     private Object functionResult;
+    private CsvComparisonState lastCsvComparisonState;
+
+    public static final class CsvComparisonState {
+        private final boolean expectedToMatch;
+        private final String payloadKey;
+        private final CsvResultComparator.DetailedComparisonResult result;
+
+        public CsvComparisonState(boolean expectedToMatch, String payloadKey, CsvResultComparator.DetailedComparisonResult result) {
+            this.expectedToMatch = expectedToMatch;
+            this.payloadKey = payloadKey;
+            this.result = result;
+        }
+
+        public boolean isExpectedToMatch() {
+            return expectedToMatch;
+        }
+
+        public String getPayloadKey() {
+            return payloadKey;
+        }
+
+        public CsvResultComparator.DetailedComparisonResult getResult() {
+            return result;
+        }
+    }
 
     public static DatabaseStepContext getInstance() {
         return INSTANCE.get();
@@ -46,14 +70,6 @@ public class DatabaseStepContext {
 
     public void setDbManager(DatabaseManager dbManager) {
         this.dbManager = dbManager;
-    }
-
-    public ConfigurationManager getConfigManager() {
-        return configManager;
-    }
-
-    public void setConfigManager(ConfigurationManager configManager) {
-        this.configManager = configManager;
     }
 
     public DatabaseConnection getCurrentConnection() {
@@ -146,5 +162,13 @@ public class DatabaseStepContext {
 
     public List<Map<String, Object>> getResultsForConnection(String connectionName) {
         return resultsByConnection.get(connectionName);
+    }
+
+    public CsvComparisonState getLastCsvComparisonState() {
+        return lastCsvComparisonState;
+    }
+
+    public void setLastCsvComparisonState(CsvComparisonState lastCsvComparisonState) {
+        this.lastCsvComparisonState = lastCsvComparisonState;
     }
 }

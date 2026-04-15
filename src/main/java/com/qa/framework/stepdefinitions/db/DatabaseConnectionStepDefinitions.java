@@ -49,18 +49,20 @@ public class DatabaseConnectionStepDefinitions {
         assertNotNull(ctx().getCurrentConnection(), "Database connection should be created");
     }
 
+    @Given("I have a database connection named {string} using config {string}")
     @Given("I have a database connection named {string} using profile {string}")
-    public void iHaveADatabaseConnectionUsingProfile(String connectionName, String profile) {
-        DatabaseConnection connection = DatabaseConnectionFactory.createConnectionFromProfile(profile);
+    public void iHaveADatabaseConnectionUsingConfig(String connectionName, String configName) {
+        DatabaseConnection connection = DatabaseConnectionFactory.createConnection(configName, ctx().getFeatureName(), ctx().getScenarioName());
         ctx().getDbManager().addConnection(connectionName, connection);
         ctx().setCurrentConnection(connection);
-        assertNotNull(ctx().getCurrentConnection(), "Database connection should be created from profile: " + profile);
+        assertNotNull(ctx().getCurrentConnection(), "Database connection should be created from config: " + configName);
     }
 
+    @Given("I set the active profile to {string}")
     @Given("I set the active database profile to {string}")
     public void iSetTheActiveDatabaseProfileTo(String profile) {
-        ctx().getConfigManager().setActiveProfile(profile);
-        assertEquals(profile, ctx().getConfigManager().getActiveProfile(), "Active profile should be set to: " + profile);
+        System.setProperty("profile", profile);
+        assertEquals(profile, DatabaseConfigLoader.getProfile(), "Active profile should be set to: " + profile);
     }
 
     @Given("I connect to the database {string}")
@@ -71,10 +73,11 @@ public class DatabaseConnectionStepDefinitions {
         assertTrue(ctx().getCurrentConnection().isConnected(), "Should be connected to database");
     }
 
+    @Given("I connect to database using the active config")
     @Given("I connect to database using the active profile")
-    public void iConnectToTheDatabaseUsingActiveProfile() {
-        ctx().setCurrentConnection(DatabaseConnectionFactory.createAndConnect());
-        assertNotNull(ctx().getCurrentConnection(), "Database connection should be created from active profile");
+    public void iConnectToTheDatabaseUsingActiveConfig() {
+        ctx().setCurrentConnection(DatabaseConnectionFactory.createAndConnect(ctx().getFeatureName(), ctx().getScenarioName()));
+        assertNotNull(ctx().getCurrentConnection(), "Database connection should be created from active config");
         assertTrue(ctx().getCurrentConnection().isConnected(), "Should be connected to database");
     }
 
