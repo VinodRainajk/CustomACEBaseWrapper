@@ -1,7 +1,6 @@
 package com.qa.framework.payload;
 
 import com.qa.framework.db.DatabaseConfigLoader;
-import com.qa.framework.utils.DynamicValueUtils;
 import io.cucumber.java.After;
 import io.cucumber.java.Before;
 import io.cucumber.java.Scenario;
@@ -16,19 +15,19 @@ public class FeaturePayloadHooks {
         PayloadStepContext.clearPendingBody();
         PayloadStepContext.clearPendingSqlStatement();
         PayloadStepContext.clearPendingPreparedStatement();
-        DynamicValueUtils.clearScenarioVariables();
+        ScenarioVariableStore.clear();
         if (scenario.getUri() != null) {
-            FeaturePayloadLoader.setActiveFeature(
+            PayloadRegistry.setActiveFeature(
                     DatabaseConfigLoader.extractFeatureName(scenario.getUri().toString()));
         }
     }
 
     @After(order = 10000)
     public void clearPayloadContext() {
-        FeaturePayloadLoader.clear();
+        PayloadRegistry.clear();
         PayloadStepContext.clearPendingBody();
         PayloadStepContext.clearPendingSqlStatement();
         PayloadStepContext.clearPendingPreparedStatement();
-        DynamicValueUtils.clearScenarioVariables();
+        ScenarioVariableStore.clear();
     }
 }

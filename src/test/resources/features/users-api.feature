@@ -23,3 +23,8 @@ Feature: Users API using feature payload YAML
   Scenario: Fetch user (no body)
     When I send a GET request to path from feature payload "paths.user_by_id"
     Then the response status code should be 200
+
+  Scenario: Create post via payload operations registry
+    Given variable title is "Users API payload test"
+    When I send API payload "create_post"
+    Then the response status code should be 201

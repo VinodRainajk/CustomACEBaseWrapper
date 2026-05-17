@@ -8,6 +8,12 @@ api:
     users: /users
     user_by_id: /users/1
 
+testData:
+  tenantId: "1001"
+
+secrets:
+  apiKey: local-demo-key
+
 db:
   mysql:
     type: mysql

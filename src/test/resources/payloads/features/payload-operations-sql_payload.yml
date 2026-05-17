@@ -1,0 +1,4 @@
+operations:
+  count_users_by_email:
+    type: SQL
+    file: sql/users-api/count-users.sql

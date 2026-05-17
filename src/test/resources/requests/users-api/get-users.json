@@ -1,0 +1,7 @@
+{
+  "method": "GET",
+  "url": "$config:api.application.url$config:api.paths.users",
+  "headers": {
+    "Accept": "application/json"
+  }
+}

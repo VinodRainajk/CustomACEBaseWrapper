@@ -1,0 +1,7 @@
+operations:
+  create_post:
+    type: API
+    file: requests/users-api/create-post.json
+  get_users:
+    type: API
+    file: requests/users-api/get-users.json

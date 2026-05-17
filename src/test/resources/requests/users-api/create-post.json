@@ -1,0 +1,12 @@
+{
+  "method": "POST",
+  "url": "$config:api.application.url$config:api.paths.users",
+  "headers": {
+    "Content-Type": "application/json"
+  },
+  "body": {
+    "title": "$var:title",
+    "body": "Payload operations demo",
+    "userId": 1
+  }
+}

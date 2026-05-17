@@ -68,7 +68,7 @@ public class APIRequestStepDefinitions {
 
     /** Relative path from merged API YAML (e.g. {@code paths.users}); base URL from {@code @API} hook or Background. */
 
-    @When("git I send a GET request to path from API config {string}")
+    @When("I send a GET request to path from API config {string}")
 
     public void iSendAGetRequestToPathFromApiConfig(String pathConfigKey) {
 

@@ -1,3 +1,14 @@
+operations:
+  create_post:
+    type: API
+    file: requests/users-api/create-post.json
+  get_users:
+    type: API
+    file: requests/users-api/get-users.json
+  count_users_by_email:
+    type: SQL
+    file: sql/users-api/count-users.sql
+
 paths:
   users: /users
   user_by_id: /users/1
