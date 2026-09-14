@@ -71,6 +71,15 @@ public class DatabaseTest {
 ```
 
 **Cucumber Example:**
+
+Put this in the consuming project's `src/test/resources/cucumber.properties` (required — all glue
+extends `Steps(TestContext)`):
+
+```properties
+cucumber.object-factory=com.acebase.context.AcebaseObjectFactory
+cucumber.glue=com.qa.framework.stepdefinitions.db,com.qa.framework.payload
+```
+
 ```gherkin
 @DB
 Feature: User Database Tests
@@ -216,6 +225,7 @@ Then all rows should have column "id" not null
 ## Next Steps
 
 - Read [DATABASE_CONFIGURATION.md](DATABASE_CONFIGURATION.md) for detailed configuration options
-- Check example feature files in `src/test/resources/features/db/`
-- Review step definitions in `src/test/java/com/qa/framework/stepdefinitions/db/`
+- Read [DECLARATIVE_STEPS_ARCHITECTURE.md](DECLARATIVE_STEPS_ARCHITECTURE.md) for `# BA:` bundles and Pico glue
+- Check example feature files in the ACEBaseCustomTemplate project
+- Review step definitions in `src/main/java/com/qa/framework/stepdefinitions/`
 - Customize configuration files for your environment

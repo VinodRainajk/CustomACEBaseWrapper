@@ -403,7 +403,8 @@ New features should use **operations** only; legacy can remain until migration c
 
 ### 8.5 Cucumber glue (runners)
 
-Register package `com.qa.framework.payload` in your runner:
+Register package `com.qa.framework.payload` in your runner. Payload glue extends
+`Steps(TestContext)`; also set `cucumber.object-factory=com.acebase.context.AcebaseObjectFactory`.
 
 | Runner | Glue includes payload? |
 |--------|-------------------------|

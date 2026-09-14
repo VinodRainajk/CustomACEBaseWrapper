@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Added — Pico scenario context and declarative recipe invoke
+
+- Every Cucumber glue class (UI, API, DB, payload, hooks) extends ace-base `Steps` and is constructed as `Steps(TestContext)`.
+- Ace-base `AcebaseObjectFactory` builds **one** `TestContext` per scenario. Application code must not call `new TestContext()`.
+- `TestContext` extends `RunContext` and holds feature, scenario, test name, `TestDriver`, and `additionalCapabilities`.
+- Declarative `# BA:` recipes obtain glue instances through Cucumber `Lookup` (same Pico instance as Java steps).
+- Template / runners select `cucumber.object-factory=com.acebase.context.AcebaseObjectFactory`.
+- Working declarative UI POC: `ACEBaseCustomTemplate` practice login (`@driver` + `@declarative:practiceLogin`).
+
+### Changed
+
+- Removed wrapper `UIContextHook` (`new TestContext()`). Pico constructs context before hooks.
+- Ace-base `ContextSteps` no longer creates or clears `TestContext`; it only copies scenario identity onto the Pico instance.
+- `AtomicStepRegistry` no longer requires a no-arg constructor on step classes.
+
 ## [1.0.0] - 2026-03-02
 
 ### Added - Initial Release

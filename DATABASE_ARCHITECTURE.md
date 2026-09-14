@@ -4,6 +4,11 @@
 
 This document describes the architecture of the database testing flow, from the InterceptorRunner entry point down to the database layer.
 
+Every class in `stepdefinitions.db` (including `DatabaseHooks`) extends ace-base `Steps` and is
+constructed as `Steps(TestContext)`. Pico (`AcebaseObjectFactory`) injects one `TestContext` per
+scenario. Domain state still lives on `DatabaseStepContext` (`ThreadLocal`). Set
+`cucumber.object-factory=com.acebase.context.AcebaseObjectFactory`.
+
 ---
 
 ## High-Level Flow

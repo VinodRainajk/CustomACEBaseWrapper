@@ -1,7 +1,14 @@
 # Declarative Steps Architecture (Design)
 
-Status: **engine implemented in `com.qa.framework.declarative`.** Template examples live in
-`ACEBaseCustomTemplate` (`bundles/google-search.feature` plus the two Google feature files).
+Status: **engine implemented in `com.qa.framework.declarative`.** Working template POC is
+`ACEBaseCustomTemplate` practice login (`bundles/practice-login.feature` +
+`features/practice-login.feature` on the-internet.herokuapp.com). Google search bundles remain as
+an extra example; they are blocked by CAPTCHA at runtime.
+
+Atomic UI/API/DB/payload step classes all extend ace-base `Steps(TestContext)`. Pico
+(`AcebaseObjectFactory`) constructs one `TestContext` per scenario and injects it. Recipe invoke
+uses Cucumber `Lookup`, so a `# BA:` line runs the same glue instance as a Java step — never
+`new TestContext()` and never a no-arg `new SomeStepDefinitions()`.
 
 ## Agreed rules (v1)
 
@@ -12,7 +19,10 @@ Status: **engine implemented in `com.qa.framework.declarative`.** Template examp
 - `@declarative:name` on the BA scenario names the bundle it uses. One bundle, many scenarios.
   Several `@declarative:` tags when a scenario draws on several bundles.
 - Ticket tags are metadata only. No scoping by tag. Distinct sentences for distinct meanings.
-- Bundles live under `classpath:bundles/`. Runners are not modified. The layer is silent with no bundles.
+- Bundles live under `classpath:bundles/`. The declarative layer is silent with no bundles.
+- Glue classes (UI, API, DB, payload, hooks) all `extend Steps` and take `TestContext`. Runners select
+  `cucumber.object-factory=com.acebase.context.AcebaseObjectFactory`; glue *paths* were not redesigned
+  for declarative.
 - Recipe lines resolve only against Java atomic steps, never against other `# BA:` sentences.
 
 ## Purpose
@@ -382,8 +392,9 @@ segments, a segment that asserts without acting first asserts on stale results:
 Every segment's recipe must be self-contained: act, then assert. The loader can warn when a segment
 contains assertions but no action step; it is a heuristic, so warn rather than fail.
 
-Parallelism is unaffected: every context is `ThreadLocal`, and a recipe runs on the same thread as
-the declarative step that triggered it.
+Parallelism is unaffected: Pico builds one `TestContext` (and one instance of each glue class) per
+scenario on the scenario thread. Domain helpers such as `DatabaseStepContext` remain `ThreadLocal`.
+A recipe runs on the same thread as the declarative step that triggered it.
 
 ---
 
@@ -456,9 +467,47 @@ So cross-domain scenarios need one more runner: TestNG, for the ace-base driver 
 `com.acebase.runner.CucumberPlugin` reporting, with glue `com.acebase.glue` plus db, ui, api and
 payload. Concretely `UIAPITestNGRunner` with the db package added.
 
-Hook details checked in the current code: `DatabaseHooks` and `APIHooks` use untagged `@Before`, so
-they fire for any scenario once their glue is loaded. `UIStepDefinitions` uses `@Before("@UI")`, so a
-mixed scenario still needs `@UI` to get a browser. Ace-base's own hook tags are unverified.
+---
+
+## Scenario context (Pico and Steps)
+
+Ace-base owns the scenario container. This is the model every glue class follows — UI, API, DB,
+payload and hooks, not UI only.
+
+| Type | Role |
+|---|---|
+| `RunContext` | Run-level reporter / run event (`RunContext.current()`). |
+| `TestContext` | Extends `RunContext`. Per scenario: feature, scenario, test name, `TestDriver`, `additionalCapabilities`. |
+| `Steps` | Base for every glue class. Constructor `Steps(TestContext)` stores the injected context. |
+| `AcebaseObjectFactory` | Cucumber `ObjectFactory`. `start()` constructs **one** `TestContext` (Pico-only); `getInstance` passes it to `Steps(TestContext)`. `stop()` clears it. |
+
+`TestContext`'s no-arg constructor throws *Do not call new TestContext()* unless Pico is constructing
+it. `initDefaults()` is reserved and currently empty. `ContextSteps` no longer does
+`new TestContext()`; it only copies feature / scenario names onto the instance Pico already built.
+
+A new atomic step class looks like this (API, DB and payload are the same shape):
+
+```java
+public class DatabaseSelectStepDefinitions extends Steps {
+    public DatabaseSelectStepDefinitions(TestContext<?> testContext) {
+        super(testContext);
+    }
+}
+```
+
+Declarative recipes do not bypass this. `AtomicStepRegistry` asks `Lookup.getInstance(type)` so the
+recipe uses the Pico instance. Without a lookup (unit tests) it falls back to
+`new Type(TestContext.get())` or a no-arg constructor — still never `new TestContext()`.
+
+Required config (cucumber-core also registers `DefaultObjectFactory`):
+
+```properties
+cucumber.object-factory=com.acebase.context.AcebaseObjectFactory
+```
+
+Driver lifecycle: ace-base starts a browser on `@driver` (`DriverSteps`, order 10), not `@UI`.
+`DatabaseHooks` and `APIHooks` use untagged `@Before`, so they fire for any scenario once their glue
+is loaded. Pico has already constructed `TestContext` before those hooks run.
 
 ---
 
@@ -468,21 +517,31 @@ New package `com.qa.framework.declarative` in the wrapper.
 
 | Class | Responsibility |
 |---|---|
-| `DeclarativeBackendProvider` | `ServiceLoader` entry point; implements `BackendProviderService` |
+| `DeclarativeBackendProvider` | `ServiceLoader` entry point; implements `BackendProviderService`; passes Cucumber `Lookup` into the backend |
 | `DeclarativeBackend` | On `loadGlue`, registers one `DeclarativeStepDefinition` per segment |
 | `BundleLoader` | Finds and parses bundle features from the classpath; applies the parsing rules |
 | `BundleSegment` | Model: sentence expression, tags, ordered recipe lines, source file and line |
 | `DeclarativeStepDefinition` | Synthetic `StepDefinition`; substitutes args and delegates |
-| `AtomicStepRegistry` | Scans glue packages for `@Given`/`@When`/`@Then`; resolves a sentence to a method plus args |
+| `AtomicStepRegistry` | Scans glue packages for `@Given`/`@When`/`@Then`; resolves a sentence to a method plus args; instantiates glue via `Lookup` |
 | `AtomicStepInvoker` | Invokes the resolved method, reports each line, wraps failures |
 | `DeclarativeHooks` | `@Before` hook capturing the `Scenario` into a `ThreadLocal` for reporting |
 | `DeclarativeConfig` | Bundle paths, glue packages, strictness, reporting |
+| `AcebaseObjectFactory` (ace-base) | Pico-style `ObjectFactory`: one `TestContext` per scenario, injected into every `Steps` subclass |
 
 Service registration:
 
 ```
 src/main/resources/META-INF/services/io.cucumber.core.backend.BackendProviderService
   → com.qa.framework.declarative.DeclarativeBackendProvider
+```
+
+Ace-base (not the wrapper) registers the object factory:
+
+```
+ace-base .../META-INF/services/io.cucumber.core.backend.ObjectFactory
+  → com.acebase.context.AcebaseObjectFactory
+ace-base .../cucumber.properties
+  cucumber.object-factory=com.acebase.context.AcebaseObjectFactory
 ```
 
 ### Sketch: the synthetic step definition
@@ -535,13 +594,20 @@ than into framework internals.
    `{int}` and optional text like `row(s)` behave identically.
 3. Match, convert captured arguments to the method's parameter types, return method plus args.
 
-Two facts about the current code keep this simple:
+Facts about the current code:
 
 - **No custom parameter types.** A scan for `@ParameterType`, `@DataTableType` and `@DocStringType`
   found none, so only built-in types and `List<String>` tables need handling.
-- **State is `ThreadLocal`, not injected.** Contexts come from statics such as
-  `DatabaseStepContext.getInstance()`, so a reflectively created instance shares state with normally
-  invoked steps. No object factory to reproduce.
+- **Glue is Pico-injected.** Every step-definition and hook class extends
+  `com.acebase.steps.Steps` and takes `Steps(TestContext)`. `AcebaseObjectFactory` constructs one
+  `TestContext` per scenario (application code must not call `new TestContext()`). Recipe invoke
+  uses `Lookup.getInstance(type)` so the declarative layer shares that instance with Java steps.
+  Domain helpers such as `DatabaseStepContext` / `APIStepContext` remain static `ThreadLocal`
+  alongside the injected `TestContext`.
+- **Object factory must be selected.** Cucumber-core also registers `DefaultObjectFactory`. Set
+  `cucumber.object-factory=com.acebase.context.AcebaseObjectFactory` (template
+  `cucumber.properties`, plus `@CucumberOptions(objectFactory=...)` / JUnit
+  `OBJECT_FACTORY_PROPERTY_NAME` on runners).
 
 ---
 
@@ -551,9 +617,9 @@ Two facts about the current code keep this simple:
 ┌──────────────────────────────────────────────────────────────────────────────┐
 │ Startup (once)                                                                │
 │                                                                               │
-│  ServiceLoader ──► DeclarativeBackendProvider ──► DeclarativeBackend           │
+│  ServiceLoader ──► DeclarativeBackendProvider.create(Lookup) ──► DeclarativeBackend │
 │                                        │                                      │
-│                          loadGlue(glue, gluePaths)                            │
+│                          loadGlue(glue, gluePaths); registry.attach(lookup)   │
 │                                        │                                      │
 │  BundleLoader        ── scans ──► classpath:bundles/*.feature  (template)     │
 │  AtomicStepRegistry  ── scans ──► glue packages                (wrapper)      │
@@ -575,6 +641,7 @@ Two facts about the current code keep this simple:
 │        ▼                                                                      │
 │  AtomicStepInvoker.invoke("I execute the query \"SELECT ... 'PAY-00123'\"")    │
 │        ├──► AtomicStepRegistry.resolve(...) ──► Method + args                  │
+│        ├──► Lookup.getInstance(declaringClass)  (same Pico instance as Java)   │
 │        ├──► method.invoke(instance, args)                                     │
 │        └──► scenario.log the resolved line and its outcome                     │
 │                                                                               │
@@ -659,9 +726,10 @@ than degrade to a runtime surprise.
 
 ## Phase 1 spike (DB)
 
-DB is the target because `stepdefinitions/db` is fully implemented and runnable, unlike
-`UIStepDefinitions`, whose bodies are still `TODO`. Single domain also avoids the runner gap while
-the mechanism is proven.
+DB was the original spike target because `stepdefinitions/db` was fully implemented. UI atomic
+steps now live in `UIActionStepDefinitions` (launch URL, enter, click, wait, assertions). The
+proven end-to-end run is template practice login (`@driver` + `@declarative:practiceLogin`), not
+the placeholder `UIStepDefinitions` TODOs.
 
 Scope: one declarative step driving real atomic steps end to end. Hardcode the segment in Java if the
 loader is not ready — the point is to validate the backend and invoker, not the file format.
@@ -692,13 +760,12 @@ Success criteria: the scenario passes; changing the expected count fails the dec
 the recipe line and bundle location named; `target/cucumber-reports/db-tests.html` shows the
 declarative sentence as the step.
 
-Two decisions the spike should settle:
+Two decisions the spike settled:
 
-1. **Bundle parsing.** `io.cucumber.gherkin.GherkinParser` gives tables, doc strings, tags and
-   comment locations for free but has a message-oriented API. A line parser over this constrained
-   subset is more predictable. Try the real parser first; fall back if it fights us.
-2. **Instance lifecycle.** Whether a step-definition instance can be created per invocation (expected
-   to be fine given `ThreadLocal` contexts) or must be cached per thread.
+1. **Bundle parsing.** A constrained line parser over `# BA:` markers (not a full Gherkin message
+   rewrite). Markers outside a scenario are ignored.
+2. **Instance lifecycle.** Pico constructs one `TestContext` and one instance of each glue class per
+   scenario. The registry must use `Lookup`, not `type.getDeclaredConstructor().newInstance()`.
 
 ---
 
@@ -747,12 +814,13 @@ but if the vocabulary stays small the cheap version would have been the right ca
 
 ## Delivery phases
 
-| Phase | Content |
-|---|---|
-| 1 | Backend, registry, invoker, one DB segment end to end |
-| 2 | Bundle loader, marker parsing rules, arguments, data tables, full startup validation |
-| 3 | Reporting polish (Extent nodes if available), vocabulary listing, feature-validation goal, coverage report, unit tests |
-| 4 | Cross-domain runner (`com.acebase.glue` + db + ui + api + payload) and a UI+API+DB bundle |
+| Phase | Content | Status |
+|---|---|---|
+| 1 | Backend, registry, invoker, one DB segment end to end | Done |
+| 2 | Bundle loader, marker parsing rules, arguments, data tables, full startup validation | Done |
+| 3 | Reporting polish, vocabulary listing, feature-validation goal, coverage report, unit tests | Partial (unit/smoke tests exist; Extent child nodes and Maven vocabulary goal are still open) |
+| 4 | Pico `Steps(TestContext)` for **all** glue (UI, API, DB, payload, hooks); recipe invoke via `Lookup`; practice-login POC | Done |
+| 5 | Cross-domain runner (`com.acebase.glue` + db + ui + api + payload) and a UI+API+DB bundle | Open |
 
 Deferred until a real need appears: nesting, tag-selected variants, aliases, dependency declarations.
 
@@ -760,8 +828,9 @@ Deferred until a real need appears: nesting, tag-selected variants, aliases, dep
 
 ## Open questions
 
-1. Does `com.acebase.runner.CucumberPlugin` expose an Extent node API for nesting recipe steps, and
-   are ace-base's driver hooks tagged `@UI`? Both need the `ace-base` source.
+1. Should recipe lines become true Extent child nodes if `com.acebase.runner.CucumberPlugin` grows
+   an API for that? Today they are logged under the declarative step.
 2. Should the wrapper ship a small set of shared bundles for vocabulary common to every project, with
    templates adding their own? The classpath scan supports both; the decision affects packaging.
-3. Should the report show recipe lines always, or only on failure?
+3. Should the report show recipe lines always, or only on failure? (`declarative.report.substeps`
+   currently defaults to always.)

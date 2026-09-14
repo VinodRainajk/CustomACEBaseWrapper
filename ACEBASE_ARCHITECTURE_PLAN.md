@@ -1,5 +1,20 @@
 # ACEBase + CustomACEBaseWrapper Architecture Plan
 
+## Current implementation (Pico glue)
+
+This plan originally described splitting runners. The live contract for **every** step definition
+(UI, API, DB, payload, hooks) is:
+
+- Ace-base `AcebaseObjectFactory` is the Cucumber `ObjectFactory`.
+- It constructs one `TestContext` (extends `RunContext`) per scenario.
+- Glue classes extend `com.acebase.steps.Steps` and call `super(testContext)`.
+- Do not call `new TestContext()`; Pico is the only legal constructor.
+- Declarative bundle recipes use Cucumber `Lookup` so they share those instances.
+- Set `cucumber.object-factory=com.acebase.context.AcebaseObjectFactory`.
+
+See [DECLARATIVE_STEPS_ARCHITECTURE.md](DECLARATIVE_STEPS_ARCHITECTURE.md) (section *Scenario context
+(Pico and Steps)*) and the ace-base README.
+
 ## Overview
 
 This plan describes the split of responsibility between two projects:
@@ -261,7 +276,8 @@ ACBase
 | DB Runner | CustomACEBaseWrapper | DBTestRunner |
 | UI Runner | ACEBase | UITestRunner, glue → CustomACEBaseWrapper |
 | API Runner | ACEBase | APITestRunner, glue → CustomACEBaseWrapper |
-| DB Step Defs | CustomACEBaseWrapper | DatabaseStepDefinitions |
-| UI Step Defs | CustomACEBaseWrapper | UIStepDefinitions (to add) |
-| API Step Defs | CustomACEBaseWrapper | APIStepDefinitions (to add) |
+| DB Step Defs | CustomACEBaseWrapper | All `stepdefinitions.db` classes `extends Steps` |
+| UI Step Defs | CustomACEBaseWrapper | `UIActionStepDefinitions` / `UIStepDefinitions` — both `extends Steps` |
+| API Step Defs | CustomACEBaseWrapper | API request/response/config/error + `APIHooks` — all `extends Steps` |
+| Object factory | ACEBase | `AcebaseObjectFactory` → one `TestContext` per scenario |
 | Interceptor | CustomACEBaseWrapper | Entry point; loads step defs, routes by tag (@DB→local, @UI/@API→ACBase) |

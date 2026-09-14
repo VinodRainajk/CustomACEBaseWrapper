@@ -4,6 +4,16 @@
 
 The runners act as **interceptors/routers** that direct tests to appropriate step definition libraries based on tags.
 
+Every glue class (UI, API, DB, payload, hooks) extends ace-base `Steps(TestContext)`. Cucumber must
+use `AcebaseObjectFactory`:
+
+```properties
+cucumber.object-factory=com.acebase.context.AcebaseObjectFactory
+```
+
+`DBTestRunner`, `BaseTestRunner`, `UIAPITestNGRunner` and the template JUnit runners set this
+explicitly. IntelliJ play-button runs pick it up from `cucumber.properties`.
+
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │  Template Project (ACEBaseCustomTemplate)                   │

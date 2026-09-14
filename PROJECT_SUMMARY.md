@@ -8,10 +8,11 @@ This is a Java 17 Maven library designed for database testing with Cucumber inte
 
 ✅ **Multi-Database Support** - MySQL, PostgreSQL, SQL Server, Oracle  
 ✅ **Profile-Based Configuration** - Easy switching between databases  
-✅ **Cucumber Integration** - BDD-style database testing  
-✅ **Pre-built Step Definitions** - Ready-to-use Gherkin steps  
+✅ **Cucumber Integration** - BDD-style database, API and UI testing  
+✅ **Pre-built Step Definitions** - Ready-to-use Gherkin steps; every class extends ace-base `Steps(TestContext)`  
+✅ **Declarative sentences** - `# BA:` bundles in the template; recipes invoke atomic steps via Pico `Lookup`  
 ✅ **Connection Management** - Singleton pattern for managing multiple connections  
-✅ **Tag-Based Execution** - Only runs scenarios tagged with @DB  
+✅ **Tag-Based Execution** - Runners filter `@DB`, `@API`, `@UI` / `@driver`  
 
 ## Project Structure
 
@@ -253,9 +254,11 @@ db.password=password
 3. Use the profile: `createConnectionFromProfile("database")`
 
 ### Add Custom Step Definitions
-1. Create class in `com.qa.framework.stepdefinitions.db` package
-2. Add Cucumber annotations (@Given, @When, @Then)
-3. Runner will automatically discover new steps
+1. Create a class that **extends `com.acebase.steps.Steps`**
+2. Add `public YourSteps(TestContext<?> testContext) { super(testContext); }`
+3. Add Cucumber annotations (`@Given`, `@When`, `@Then`)
+4. Do not call `new TestContext()`; Pico injects the scenario context
+5. Ensure `cucumber.object-factory=com.acebase.context.AcebaseObjectFactory`
 
 ### Add Custom Wrapper
 1. Extend `BaseWrapper` or `ConfigurableWrapper`
@@ -287,6 +290,7 @@ db.password=password
 
 - **README.md** - Main project documentation
 - **DATABASE_CONFIGURATION.md** - Detailed configuration guide
+- **DECLARATIVE_STEPS_ARCHITECTURE.md** - `# BA:` bundles and Pico `Steps(TestContext)`
 - **QUICK_START.md** - Quick start guide for new users
 - **PROJECT_SUMMARY.md** - This file (project overview)
 
@@ -304,4 +308,4 @@ This is a custom library for internal use.
 
 ---
 
-**Last Updated**: March 2, 2026
+**Last Updated**: September 14, 2026

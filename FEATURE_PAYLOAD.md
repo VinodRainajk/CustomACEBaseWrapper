@@ -94,4 +94,4 @@ Steps like `with payload "user/create-user"` still load `payloads/user/create-us
 
 `FeaturePayloadHooks` sets the active feature name from each scenario’s URI so the correct `{featureName}_payload.yml` is loaded automatically. It also clears the pending feature-payload body at scenario start and end.
 
-**Glue:** Include `com.qa.framework.payload` in your Cucumber glue (see `BaseTestRunner`, `UIAPITestNGRunner`, `DBTestRunner`) so `FeaturePayloadHooks` and `I set the body from feature payload` are registered.
+**Glue:** Include `com.qa.framework.payload` in your Cucumber glue (see `BaseTestRunner`, `UIAPITestNGRunner`, `DBTestRunner`) so `FeaturePayloadHooks` and `I set the body from feature payload` are registered. Payload classes also extend `Steps(TestContext)`; the run must use `cucumber.object-factory=com.acebase.context.AcebaseObjectFactory`.

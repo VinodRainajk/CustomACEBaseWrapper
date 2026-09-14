@@ -7,8 +7,10 @@ A standalone Java library JAR providing base wrapper functionality and Cucumber 
 This is a **library JAR** that contains:
 - ✅ Database connection management
 - ✅ Configuration system for multiple database types
-- ✅ Cucumber step definitions for database testing
+- ✅ Cucumber step definitions for database, API, UI and payload testing
+- ✅ Declarative `# BA:` engine (bundles in the consuming project)
 - ✅ Base wrapper classes for custom implementations
+- ✅ Glue that extends ace-base `Steps(TestContext)` (Pico injects one context per scenario)
 
 This library does **NOT** contain:
 - ❌ Feature files (these go in your test project)
@@ -68,15 +70,20 @@ mvn package
 mvn clean install
 ```
 
-**Important**: This library must be installed to your local Maven repository before it can be used in test projects.
+**Build order:** Install ACEBase, then this library, then the template.
+
+```bash
+# From this project directory (after ace-base is installed)
+mvn clean install
+```
 
 ## Using This Library in Your Test Project
 
-### Step 1: Install the Library
+### Step 1: Install ace-base, then this library
 
 ```bash
-# From this project directory
-mvn clean install
+cd ../ACBase && mvn clean install
+cd ../CustomACEBaseWrapper && mvn clean install
 ```
 
 This installs the JAR to your local Maven repository (`~/.m2/repository`).
@@ -93,18 +100,22 @@ In your test project's `pom.xml`, add:
 </dependency>
 ```
 
-### Step 3: Configure Cucumber Glue
+### Step 3: Configure Cucumber Glue and object factory
 
 In your test project's `cucumber.properties`:
 
 ```properties
-cucumber.glue=com.qa.framework.stepdefinitions.db
+cucumber.object-factory=com.acebase.context.AcebaseObjectFactory
+cucumber.glue=com.acebase.glue,com.qa.framework.stepdefinitions.ui,com.qa.framework.stepdefinitions.api,com.qa.framework.stepdefinitions.db,com.qa.framework.payload
 ```
 
-Or in your test runner:
+Narrow glue to the packages a runner needs (for example DB-only: `com.qa.framework.stepdefinitions.db,com.qa.framework.payload`). The object factory is required for every run: cucumber-core also registers `DefaultObjectFactory`, and all step classes now take `Steps(TestContext)`.
+
+Or in a JUnit runner:
 
 ```java
-@ConfigurationParameter(key = GLUE_PROPERTY_NAME, value = "com.qa.framework.stepdefinitions.db")
+@ConfigurationParameter(key = GLUE_PROPERTY_NAME, value = "com.qa.framework.stepdefinitions.db,com.qa.framework.payload")
+@ConfigurationParameter(key = OBJECT_FACTORY_PROPERTY_NAME, value = "com.acebase.context.AcebaseObjectFactory")
 ```
 
 ### Step 4: Create Feature Files and Config
@@ -217,27 +228,33 @@ The library includes a Cucumber test runner that can execute database step defin
 
 ### Creating Custom Step Definitions
 
-Add your own step definitions in the `com.qa.framework.stepdefinitions.db` package:
+Every glue class must extend ace-base `Steps` and take the Pico-injected `TestContext`. A no-arg constructor will not be called.
 
 ```java
 package com.qa.framework.stepdefinitions.db;
 
+import com.acebase.context.TestContext;
+import com.acebase.steps.Steps;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.When;
 import io.cucumber.java.en.Then;
 
-public class MyCustomSteps {
-    
+public class MyCustomSteps extends Steps {
+
+    public MyCustomSteps(TestContext<?> testContext) {
+        super(testContext);
+    }
+
     @Given("I have custom setup")
     public void customSetup() {
         // Your setup logic
     }
-    
+
     @When("I perform custom action")
     public void customAction() {
         // Your action logic
     }
-    
+
     @Then("I verify custom result")
     public void verifyResult() {
         // Your verification logic
@@ -320,9 +337,9 @@ The library provides the following pre-built step definitions for database testi
 - **[CONFIGURATION.md](CONFIGURATION.md)** - Profile-based config (Option B: profile as folder), DB and API
 - **[DATABASE_ARCHITECTURE.md](DATABASE_ARCHITECTURE.md)** - Database config hierarchy and step definitions
 - **[API_ARCHITECTURE.md](API_ARCHITECTURE.md)** - API config and payload structure
+- **[DECLARATIVE_STEPS_ARCHITECTURE.md](DECLARATIVE_STEPS_ARCHITECTURE.md)** - `# BA:` bundles, Pico `Steps(TestContext)`, recipe invoke
 - **[QUICK_START.md](QUICK_START.md)** - Quick start guide for new users
 
 ## License
 
-This is a custom library for internal use.
-"# CustomACEBaseWrapper" 
+This is a custom library for internal use. 

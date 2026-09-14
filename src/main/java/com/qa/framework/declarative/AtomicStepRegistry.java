@@ -1,6 +1,5 @@
 package com.qa.framework.declarative;
 
-import com.acebase.context.TestContext;
 import com.qa.framework.exceptions.WrapperException;
 import io.cucumber.core.backend.Lookup;
 import io.cucumber.cucumberexpressions.Argument;
@@ -10,7 +9,6 @@ import io.cucumber.cucumberexpressions.ParameterTypeRegistry;
 import io.cucumber.datatable.DataTable;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -267,40 +265,19 @@ final class AtomicStepRegistry {
         }
     }
 
-    private Object instantiate(Class<?> type) {
-        if (lookup != null) {
-            return lookup.getInstance(type);
+    /**
+     * One glue instance per class per scenario, from Cucumber's {@link Lookup}.
+     * Pico already constructed {@code TestContext} for this scenario and will inject it into
+     * {@code Steps(TestContext)}. There is no {@code TestContext.get()} — the original ACE type
+     * does not expose one.
+     */
+    Object instantiate(Class<?> type) {
+        if (lookup == null) {
+            throw new WrapperException("Cannot construct " + type.getName()
+                    + " for a bundle recipe. TestContext is injected by Pico into Steps(TestContext);"
+                    + " there is no static TestContext.get(). Attach Cucumber Lookup"
+                    + " (AcebaseObjectFactory).");
         }
-        try {
-            Constructor<?> withContext = testContextConstructor(type);
-            if (withContext != null) {
-                TestContext<?> context = TestContext.get();
-                if (context == null) {
-                    throw new WrapperException("Step definition class " + type.getName()
-                            + " needs the scenario TestContext. Pico constructs one per scenario and"
-                            + " passes it to Steps(TestContext); do not call new TestContext().");
-                }
-                withContext.setAccessible(true);
-                return withContext.newInstance(context);
-            }
-            Constructor<?> noArgs = type.getDeclaredConstructor();
-            noArgs.setAccessible(true);
-            return noArgs.newInstance();
-        } catch (WrapperException e) {
-            throw e;
-        } catch (ReflectiveOperationException e) {
-            throw new WrapperException("Cannot construct step definition class " + type.getName()
-                    + " for a bundle recipe", e);
-        }
-    }
-
-    private static Constructor<?> testContextConstructor(Class<?> type) {
-        for (Constructor<?> constructor : type.getDeclaredConstructors()) {
-            Class<?>[] parameters = constructor.getParameterTypes();
-            if (parameters.length == 1 && TestContext.class.isAssignableFrom(parameters[0])) {
-                return constructor;
-            }
-        }
-        return null;
+        return lookup.getInstance(type);
     }
 }

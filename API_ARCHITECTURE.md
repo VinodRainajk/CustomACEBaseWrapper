@@ -2,7 +2,14 @@
 
 ## Overview
 
-This document lists proposed API operations and the architecture for API testing, from InterceptorRunner down to the API layer. **Review only—no code changes yet.**
+This document lists API operations and the architecture for API testing, from InterceptorRunner down to the API layer.
+
+Every class in `stepdefinitions.api` (including `APIHooks`) extends ace-base `Steps` and is
+constructed as `Steps(TestContext)`. Pico (`AcebaseObjectFactory`) injects one `TestContext` per
+scenario. Request/response state still lives on `APIStepContext`. Set
+`cucumber.object-factory=com.acebase.context.AcebaseObjectFactory`. See
+[DECLARATIVE_STEPS_ARCHITECTURE.md](DECLARATIVE_STEPS_ARCHITECTURE.md) for `# BA:` recipes that call
+these atomic steps.
 
 ---
 

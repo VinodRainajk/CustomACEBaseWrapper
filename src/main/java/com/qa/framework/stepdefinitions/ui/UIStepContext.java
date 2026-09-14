@@ -12,12 +12,8 @@ import java.time.Duration;
 /**
  * Access to the browser ace-base started for this scenario.
  * <p>
- * The driver lifecycle stays where it already lives: ace-base builds a driver in its
- * {@code @Before("@driver")} hook and stores it on the test context, so these step definitions only
- * read it. Nothing here creates or quits a browser.
- * </p>
- * <p>
- * {@code -Dui.timeout.seconds} sets how long element lookups wait, default 10.
+ * The driver lives on the scenario {@link TestContext} that Pico constructed and passed into
+ * {@code Steps(TestContext)}. Callers must pass that instance — do not look up a new context here.
  * </p>
  */
 public final class UIStepContext {
@@ -29,8 +25,7 @@ public final class UIStepContext {
     }
 
     /** The browser for this scenario. */
-    public static WebDriver driver() {
-        TestContext<?> context = TestContext.get();
+    public static WebDriver driver(TestContext<?> context) {
         if (context == null || context.TestDriver == null || context.TestDriver.driver == null
                 || context.TestDriver.driver.Driver == null) {
             throw new WrapperException("No browser is running for this scenario."
@@ -40,22 +35,22 @@ public final class UIStepContext {
     }
 
     /** Waits for an element to be visible and returns it. */
-    public static WebElement visible(String locator) {
-        return waiter().until(ExpectedConditions.visibilityOfElementLocated(UILocator.of(locator)));
+    public static WebElement visible(TestContext<?> context, String locator) {
+        return waiter(context).until(ExpectedConditions.visibilityOfElementLocated(UILocator.of(locator)));
     }
 
     /** Waits for an element to be clickable and returns it. */
-    public static WebElement clickable(String locator) {
-        return waiter().until(ExpectedConditions.elementToBeClickable(UILocator.of(locator)));
+    public static WebElement clickable(TestContext<?> context, String locator) {
+        return waiter(context).until(ExpectedConditions.elementToBeClickable(UILocator.of(locator)));
     }
 
     /**
      * Returns the element if it becomes visible within {@code seconds}, otherwise {@code null}.
      * Used by optional clicks such as a cookie banner that is not always there.
      */
-    public static WebElement visibleOrNull(String locator, long seconds) {
+    public static WebElement visibleOrNull(TestContext<?> context, String locator, long seconds) {
         try {
-            return new WebDriverWait(driver(), Duration.ofSeconds(Math.max(1, seconds)))
+            return new WebDriverWait(driver(context), Duration.ofSeconds(Math.max(1, seconds)))
                     .until(ExpectedConditions.visibilityOfElementLocated(UILocator.of(locator)));
         } catch (org.openqa.selenium.TimeoutException ignored) {
             return null;
@@ -63,8 +58,8 @@ public final class UIStepContext {
     }
 
     /** A wait bounded by {@code ui.timeout.seconds}. */
-    public static WebDriverWait waiter() {
-        return new WebDriverWait(driver(), Duration.ofSeconds(timeoutSeconds()));
+    public static WebDriverWait waiter(TestContext<?> context) {
+        return new WebDriverWait(driver(context), Duration.ofSeconds(timeoutSeconds()));
     }
 
     private static long timeoutSeconds() {
