@@ -2,6 +2,9 @@ package com.qa.framework.stepdefinitions.api;
 
 
 
+
+import com.acebase.context.TestContext;
+import com.acebase.steps.Steps;
 import com.qa.framework.api.APIConfigLoader;
 
 import com.qa.framework.api.PayloadLoader;
@@ -40,7 +43,12 @@ import static io.restassured.RestAssured.given;
 
  */
 
-public class APIRequestStepDefinitions {
+public class APIRequestStepDefinitions extends Steps {
+
+    public APIRequestStepDefinitions(TestContext<?> testContext) {
+        super(testContext);
+    }
+
 
 
 

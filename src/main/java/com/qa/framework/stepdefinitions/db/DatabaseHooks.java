@@ -1,5 +1,8 @@
 package com.qa.framework.stepdefinitions.db;
 
+
+import com.acebase.context.TestContext;
+import com.acebase.steps.Steps;
 import com.qa.framework.db.DatabaseConfigLoader;
 import com.qa.framework.db.DatabaseManager;
 import io.cucumber.java.After;
@@ -10,7 +13,12 @@ import io.cucumber.java.Scenario;
  * Hooks for database step definitions - setup and teardown.
  * Sets feature and scenario name for config resolution (master + feature + section).
  */
-public class DatabaseHooks {
+public class DatabaseHooks extends Steps {
+
+    public DatabaseHooks(TestContext<?> testContext) {
+        super(testContext);
+    }
+
 
     @Before
     public void setUp(Scenario scenario) {

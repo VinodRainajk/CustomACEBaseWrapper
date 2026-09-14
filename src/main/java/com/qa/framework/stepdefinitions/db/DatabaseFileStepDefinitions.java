@@ -1,5 +1,8 @@
 package com.qa.framework.stepdefinitions.db;
 
+
+import com.acebase.context.TestContext;
+import com.acebase.steps.Steps;
 import com.qa.framework.exceptions.WrapperException;
 import com.qa.framework.utils.DynamicValueUtils;
 import com.qa.framework.utils.FileSearchUtils;
@@ -21,7 +24,12 @@ import static org.junit.jupiter.api.Assertions.*;
  * Handles copy, export/import scenarios. Database-specific file ops (e.g. BFILE, UTL_FILE)
  * may require vendor-specific implementations.
  */
-public class DatabaseFileStepDefinitions {
+public class DatabaseFileStepDefinitions extends Steps {
+
+    public DatabaseFileStepDefinitions(TestContext<?> testContext) {
+        super(testContext);
+    }
+
 
     @When("I copy the file from {string} to {string}")
     public void iCopyTheFileFromTo(String sourcePath, String destPath) {

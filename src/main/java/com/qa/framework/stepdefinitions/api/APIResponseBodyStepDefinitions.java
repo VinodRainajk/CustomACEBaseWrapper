@@ -1,5 +1,8 @@
 package com.qa.framework.stepdefinitions.api;
 
+
+import com.acebase.context.TestContext;
+import com.acebase.steps.Steps;
 import com.qa.framework.exceptions.WrapperException;
 import com.qa.framework.utils.DynamicValueUtils;
 import com.qa.framework.utils.PollingUtils;
@@ -13,7 +16,12 @@ import static io.restassured.RestAssured.given;
 /**
  * Step definitions for response body assertions.
  */
-public class APIResponseBodyStepDefinitions {
+public class APIResponseBodyStepDefinitions extends Steps {
+
+    public APIResponseBodyStepDefinitions(TestContext<?> testContext) {
+        super(testContext);
+    }
+
 
     private APIStepContext ctx() {
         return APIStepContext.getInstance();

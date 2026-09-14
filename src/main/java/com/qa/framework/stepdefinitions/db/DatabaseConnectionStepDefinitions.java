@@ -1,5 +1,8 @@
 package com.qa.framework.stepdefinitions.db;
 
+
+import com.acebase.context.TestContext;
+import com.acebase.steps.Steps;
 import com.qa.framework.db.DatabaseConfigLoader;
 import com.qa.framework.db.DatabaseConnection;
 import com.qa.framework.db.DatabaseConnectionFactory;
@@ -16,7 +19,12 @@ import static org.junit.jupiter.api.Assertions.*;
  * Step definitions for database connection management.
  * Supports YAML config (master + feature + section) via config name in steps.
  */
-public class DatabaseConnectionStepDefinitions {
+public class DatabaseConnectionStepDefinitions extends Steps {
+
+    public DatabaseConnectionStepDefinitions(TestContext<?> testContext) {
+        super(testContext);
+    }
+
 
     private DatabaseStepContext ctx() {
         return DatabaseStepContext.getInstance();

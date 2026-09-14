@@ -1,5 +1,8 @@
 package com.qa.framework.stepdefinitions.db;
 
+
+import com.acebase.context.TestContext;
+import com.acebase.steps.Steps;
 import com.qa.framework.payload.FeaturePayloadLoader;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -10,7 +13,12 @@ import static org.junit.jupiter.api.Assertions.*;
  * Step definitions for database functions.
  * Functions are typically called via SELECT, e.g. SELECT my_function(?) FROM DUAL
  */
-public class DatabaseFunctionStepDefinitions {
+public class DatabaseFunctionStepDefinitions extends Steps {
+
+    public DatabaseFunctionStepDefinitions(TestContext<?> testContext) {
+        super(testContext);
+    }
+
 
     private DatabaseStepContext ctx() {
         return DatabaseStepContext.getInstance();

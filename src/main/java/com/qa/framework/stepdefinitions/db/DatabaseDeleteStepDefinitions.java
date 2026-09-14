@@ -1,5 +1,8 @@
 package com.qa.framework.stepdefinitions.db;
 
+
+import com.acebase.context.TestContext;
+import com.acebase.steps.Steps;
 import com.qa.framework.db.PendingStatementExecutor;
 import com.qa.framework.payload.FeaturePayloadLoader;
 import io.cucumber.java.en.Then;
@@ -12,7 +15,12 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * Step definitions for DELETE operations.
  */
-public class DatabaseDeleteStepDefinitions {
+public class DatabaseDeleteStepDefinitions extends Steps {
+
+    public DatabaseDeleteStepDefinitions(TestContext<?> testContext) {
+        super(testContext);
+    }
+
 
     private DatabaseStepContext ctx() {
         return DatabaseStepContext.getInstance();

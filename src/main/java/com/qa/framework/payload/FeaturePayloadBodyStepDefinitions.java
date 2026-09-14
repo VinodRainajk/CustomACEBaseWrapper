@@ -1,5 +1,8 @@
 package com.qa.framework.payload;
 
+
+import com.acebase.context.TestContext;
+import com.acebase.steps.Steps;
 import io.cucumber.java.en.When;
 
 import java.util.List;
@@ -7,7 +10,12 @@ import java.util.List;
 /**
  * Shared steps: load content from {@code {feature}_payload.yml} for reuse by API and DB steps.
  */
-public class FeaturePayloadBodyStepDefinitions {
+public class FeaturePayloadBodyStepDefinitions extends Steps {
+
+    public FeaturePayloadBodyStepDefinitions(TestContext<?> testContext) {
+        super(testContext);
+    }
+
 
     @When("I set the body from feature payload {string}")
     public void iSetTheBodyFromFeaturePayload(String dottedKey) {

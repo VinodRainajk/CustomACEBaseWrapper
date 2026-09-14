@@ -18,6 +18,6 @@ public final class DeclarativeBackendProvider implements BackendProviderService 
 
     @Override
     public Backend create(Lookup lookup, Container container, Supplier<ClassLoader> classLoader) {
-        return new DeclarativeBackend();
+        return new DeclarativeBackend(lookup);
     }
 }

@@ -1,5 +1,8 @@
 package com.qa.framework.stepdefinitions.db;
 
+
+import com.acebase.context.TestContext;
+import com.acebase.steps.Steps;
 import io.cucumber.java.en.Then;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -8,7 +11,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * Step definitions for error handling.
  */
-public class DatabaseErrorHandlingStepDefinitions {
+public class DatabaseErrorHandlingStepDefinitions extends Steps {
+
+    public DatabaseErrorHandlingStepDefinitions(TestContext<?> testContext) {
+        super(testContext);
+    }
+
 
     private DatabaseStepContext ctx() {
         return DatabaseStepContext.getInstance();

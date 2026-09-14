@@ -1,5 +1,8 @@
 package com.qa.framework.stepdefinitions.api;
 
+
+import com.acebase.context.TestContext;
+import com.acebase.steps.Steps;
 import com.qa.framework.api.APIConfig;
 import com.qa.framework.api.APIConfigLoader;
 import io.cucumber.java.After;
@@ -10,7 +13,12 @@ import io.cucumber.java.Scenario;
  * Hooks for API step definitions - setup and teardown.
  * Loads config (master + optional feature override) based on feature file name.
  */
-public class APIHooks {
+public class APIHooks extends Steps {
+
+    public APIHooks(TestContext<?> testContext) {
+        super(testContext);
+    }
+
 
     @Before
     public void setUp(Scenario scenario) {

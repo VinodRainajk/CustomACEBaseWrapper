@@ -1,5 +1,8 @@
 package com.qa.framework.stepdefinitions.api;
 
+
+import com.acebase.context.TestContext;
+import com.acebase.steps.Steps;
 import io.cucumber.java.en.Then;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -7,7 +10,12 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 /**
  * Step definitions for API error handling.
  */
-public class APIErrorHandlingStepDefinitions {
+public class APIErrorHandlingStepDefinitions extends Steps {
+
+    public APIErrorHandlingStepDefinitions(TestContext<?> testContext) {
+        super(testContext);
+    }
+
 
     private APIStepContext ctx() {
         return APIStepContext.getInstance();

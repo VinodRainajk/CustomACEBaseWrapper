@@ -1,6 +1,8 @@
 package com.qa.framework.declarative;
 
+import com.acebase.context.TestContext;
 import com.qa.framework.exceptions.WrapperException;
+import io.cucumber.core.backend.Lookup;
 import io.cucumber.cucumberexpressions.Argument;
 import io.cucumber.cucumberexpressions.Expression;
 import io.cucumber.cucumberexpressions.ExpressionFactory;
@@ -8,6 +10,7 @@ import io.cucumber.cucumberexpressions.ParameterTypeRegistry;
 import io.cucumber.datatable.DataTable;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -59,9 +62,18 @@ final class AtomicStepRegistry {
 
     private final List<Entry> entries;
     private final ThreadLocal<Map<Class<?>, Object>> instances = ThreadLocal.withInitial(LinkedHashMap::new);
+    private Lookup lookup;
 
     private AtomicStepRegistry(List<Entry> entries) {
         this.entries = entries;
+    }
+
+    /**
+     * Uses Cucumber's scenario container so recipe invokes share the same {@code Steps(TestContext)}
+     * instances Pico already built for Java steps.
+     */
+    void attach(Lookup lookup) {
+        this.lookup = lookup;
     }
 
     /** Builds a registry by scanning the given packages for Cucumber annotated methods. */
@@ -150,7 +162,7 @@ final class AtomicStepRegistry {
     /** Invokes a resolved match, reusing one instance per step definition class per thread. */
     void invoke(Match match) throws Throwable {
         Class<?> type = match.entry().method().getDeclaringClass();
-        Object target = instances.get().computeIfAbsent(type, AtomicStepRegistry::instantiate);
+        Object target = instances.get().computeIfAbsent(type, this::instantiate);
         try {
             match.entry().method().invoke(target, match.arguments());
         } catch (InvocationTargetException e) {
@@ -255,14 +267,40 @@ final class AtomicStepRegistry {
         }
     }
 
-    private static Object instantiate(Class<?> type) {
-        try {
-            var constructor = type.getDeclaredConstructor();
-            constructor.setAccessible(true);
-            return constructor.newInstance();
-        } catch (ReflectiveOperationException e) {
-            throw new WrapperException("Step definition class " + type.getName()
-                    + " needs a no argument constructor to be callable from a bundle recipe", e);
+    private Object instantiate(Class<?> type) {
+        if (lookup != null) {
+            return lookup.getInstance(type);
         }
+        try {
+            Constructor<?> withContext = testContextConstructor(type);
+            if (withContext != null) {
+                TestContext<?> context = TestContext.get();
+                if (context == null) {
+                    throw new WrapperException("Step definition class " + type.getName()
+                            + " needs the scenario TestContext. Pico constructs one per scenario and"
+                            + " passes it to Steps(TestContext); do not call new TestContext().");
+                }
+                withContext.setAccessible(true);
+                return withContext.newInstance(context);
+            }
+            Constructor<?> noArgs = type.getDeclaredConstructor();
+            noArgs.setAccessible(true);
+            return noArgs.newInstance();
+        } catch (WrapperException e) {
+            throw e;
+        } catch (ReflectiveOperationException e) {
+            throw new WrapperException("Cannot construct step definition class " + type.getName()
+                    + " for a bundle recipe", e);
+        }
+    }
+
+    private static Constructor<?> testContextConstructor(Class<?> type) {
+        for (Constructor<?> constructor : type.getDeclaredConstructors()) {
+            Class<?>[] parameters = constructor.getParameterTypes();
+            if (parameters.length == 1 && TestContext.class.isAssignableFrom(parameters[0])) {
+                return constructor;
+            }
+        }
+        return null;
     }
 }

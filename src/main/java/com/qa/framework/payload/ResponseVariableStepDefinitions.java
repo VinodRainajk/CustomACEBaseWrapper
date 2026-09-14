@@ -1,5 +1,8 @@
 package com.qa.framework.payload;
 
+
+import com.acebase.context.TestContext;
+import com.acebase.steps.Steps;
 import com.qa.framework.exceptions.WrapperException;
 import com.qa.framework.stepdefinitions.api.APIStepContext;
 import io.cucumber.java.en.Then;
@@ -10,7 +13,12 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 /**
  * Stores values from the last API response into {@code $var:name} for later payloads.
  */
-public class ResponseVariableStepDefinitions {
+public class ResponseVariableStepDefinitions extends Steps {
+
+    public ResponseVariableStepDefinitions(TestContext<?> testContext) {
+        super(testContext);
+    }
+
 
     private APIStepContext ctx() {
         return APIStepContext.getInstance();

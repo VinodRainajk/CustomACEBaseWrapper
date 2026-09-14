@@ -1,5 +1,8 @@
 package com.qa.framework.stepdefinitions.db;
 
+
+import com.acebase.context.TestContext;
+import com.acebase.steps.Steps;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 
@@ -11,7 +14,12 @@ import static org.junit.jupiter.api.Assertions.assertNull;
  * Step definitions for Oracle-style packages.
  * Procedures in packages are called as: {call package_name.procedure_name(?, ?)}
  */
-public class DatabasePackageStepDefinitions {
+public class DatabasePackageStepDefinitions extends Steps {
+
+    public DatabasePackageStepDefinitions(TestContext<?> testContext) {
+        super(testContext);
+    }
+
 
     private DatabaseStepContext ctx() {
         return DatabaseStepContext.getInstance();

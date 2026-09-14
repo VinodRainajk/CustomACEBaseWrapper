@@ -1,5 +1,7 @@
 package com.qa.framework.stepdefinitions.ui;
 
+import com.acebase.context.TestContext;
+import com.acebase.steps.Steps;
 import com.qa.framework.payload.PlaceholderResolver;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -22,7 +24,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * way as in the API and database steps.
  * </p>
  */
-public class UIActionStepDefinitions {
+public class UIActionStepDefinitions extends Steps {
+
+    public UIActionStepDefinitions(TestContext<?> testContext) {
+        super(testContext);
+    }
 
     @Given("I launch the url {string}")
     public void iLaunchTheUrl(String url) {

@@ -1,5 +1,8 @@
 package com.qa.framework.stepdefinitions.api;
 
+
+import com.acebase.context.TestContext;
+import com.acebase.steps.Steps;
 import io.cucumber.java.en.Then;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -7,7 +10,12 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * Step definitions for response status code assertions.
  */
-public class APIResponseStatusStepDefinitions {
+public class APIResponseStatusStepDefinitions extends Steps {
+
+    public APIResponseStatusStepDefinitions(TestContext<?> testContext) {
+        super(testContext);
+    }
+
 
     private APIStepContext ctx() {
         return APIStepContext.getInstance();

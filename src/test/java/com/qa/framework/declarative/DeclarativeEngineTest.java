@@ -1,8 +1,10 @@
 package com.qa.framework.declarative;
 
+import com.acebase.context.AcebaseObjectFactory;
 import com.qa.framework.exceptions.WrapperException;
 import com.qa.framework.payload.ScenarioVariableStore;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -18,8 +20,16 @@ class DeclarativeEngineTest {
 
     private static final String PAYLOAD_GLUE = "com.qa.framework.payload";
 
+    private final AcebaseObjectFactory objectFactory = new AcebaseObjectFactory();
+
+    @BeforeEach
+    void startScenarioContext() {
+        objectFactory.start();
+    }
+
     @AfterEach
     void clearVariables() {
+        objectFactory.stop();
         ScenarioVariableStore.clear();
     }
 

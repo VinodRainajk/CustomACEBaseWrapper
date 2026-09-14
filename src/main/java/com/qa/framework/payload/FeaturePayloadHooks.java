@@ -1,5 +1,8 @@
 package com.qa.framework.payload;
 
+
+import com.acebase.context.TestContext;
+import com.acebase.steps.Steps;
 import com.qa.framework.db.DatabaseConfigLoader;
 import io.cucumber.java.After;
 import io.cucumber.java.Before;
@@ -8,7 +11,12 @@ import io.cucumber.java.Scenario;
 /**
  * Sets active feature name for {@link FeaturePayloadLoader} from the running scenario URI.
  */
-public class FeaturePayloadHooks {
+public class FeaturePayloadHooks extends Steps {
+
+    public FeaturePayloadHooks(TestContext<?> testContext) {
+        super(testContext);
+    }
+
 
     @Before(order = 0)
     public void captureFeatureName(Scenario scenario) {

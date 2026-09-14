@@ -3,6 +3,7 @@ package com.qa.framework.declarative;
 import com.qa.framework.exceptions.WrapperException;
 import io.cucumber.core.backend.Backend;
 import io.cucumber.core.backend.Glue;
+import io.cucumber.core.backend.Lookup;
 import io.cucumber.core.backend.Snippet;
 
 import java.net.URI;
@@ -29,13 +30,19 @@ public final class DeclarativeBackend implements Backend {
 
     private static volatile List<Bundle> cachedBundles;
 
+    private final Lookup lookup;
     private AtomicStepRegistry registry;
+
+    public DeclarativeBackend(Lookup lookup) {
+        this.lookup = lookup;
+    }
 
     @Override
     public void loadGlue(Glue glue, List<URI> gluePaths) {
         List<Bundle> bundles = bundles();
 
         registry = AtomicStepRegistry.scan(packagesOf(gluePaths));
+        registry.attach(lookup);
         glue.addBeforeHook(DeclarativeHooks.bundleGuard());
 
         if (bundles.isEmpty()) {

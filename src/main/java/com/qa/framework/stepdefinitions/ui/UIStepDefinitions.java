@@ -1,5 +1,7 @@
 package com.qa.framework.stepdefinitions.ui;
 
+import com.acebase.context.TestContext;
+import com.acebase.steps.Steps;
 import io.cucumber.java.After;
 import io.cucumber.java.Before;
 import io.cucumber.java.en.Given;
@@ -11,7 +13,11 @@ import io.cucumber.java.en.When;
  * Add your UI step implementations here.
  * Loaded by UIAPITestNGRunner (glue: com.qa.framework.stepdefinitions.ui).
  */
-public class UIStepDefinitions {
+public class UIStepDefinitions extends Steps {
+
+    public UIStepDefinitions(TestContext<?> testContext) {
+        super(testContext);
+    }
 
     @Before("@UI")
     public void setUp() {

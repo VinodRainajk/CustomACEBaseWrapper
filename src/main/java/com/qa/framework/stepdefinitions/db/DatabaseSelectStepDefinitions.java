@@ -1,5 +1,8 @@
 package com.qa.framework.stepdefinitions.db;
 
+
+import com.acebase.context.TestContext;
+import com.acebase.steps.Steps;
 import com.qa.framework.db.DatabaseConnection;
 import com.qa.framework.db.PendingStatementExecutor;
 import com.qa.framework.exceptions.WrapperException;
@@ -16,7 +19,12 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * Step definitions for SELECT (read) operations.
  */
-public class DatabaseSelectStepDefinitions {
+public class DatabaseSelectStepDefinitions extends Steps {
+
+    public DatabaseSelectStepDefinitions(TestContext<?> testContext) {
+        super(testContext);
+    }
+
 
     private DatabaseStepContext ctx() {
         return DatabaseStepContext.getInstance();

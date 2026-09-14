@@ -1,5 +1,8 @@
 package com.qa.framework.stepdefinitions.db;
 
+
+import com.acebase.context.TestContext;
+import com.acebase.steps.Steps;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 
@@ -10,7 +13,12 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * Step definitions for schema/metadata verification.
  */
-public class DatabaseSchemaStepDefinitions {
+public class DatabaseSchemaStepDefinitions extends Steps {
+
+    public DatabaseSchemaStepDefinitions(TestContext<?> testContext) {
+        super(testContext);
+    }
+
 
     private DatabaseStepContext ctx() {
         return DatabaseStepContext.getInstance();

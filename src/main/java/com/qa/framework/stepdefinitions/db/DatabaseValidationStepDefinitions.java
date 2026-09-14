@@ -1,5 +1,8 @@
 package com.qa.framework.stepdefinitions.db;
 
+
+import com.acebase.context.TestContext;
+import com.acebase.steps.Steps;
 import com.qa.framework.payload.FeaturePayloadLoader;
 import com.qa.framework.utils.CsvMismatchReportWriter;
 import com.qa.framework.utils.CsvResultComparator;
@@ -14,7 +17,12 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * Step definitions for data validation.
  */
-public class DatabaseValidationStepDefinitions {
+public class DatabaseValidationStepDefinitions extends Steps {
+
+    public DatabaseValidationStepDefinitions(TestContext<?> testContext) {
+        super(testContext);
+    }
+
 
     private DatabaseStepContext ctx() {
         return DatabaseStepContext.getInstance();

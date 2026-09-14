@@ -1,5 +1,8 @@
 package com.qa.framework.stepdefinitions.db;
 
+
+import com.acebase.context.TestContext;
+import com.acebase.steps.Steps;
 import io.cucumber.java.en.When;
 
 import java.sql.Connection;
@@ -11,7 +14,12 @@ import static org.junit.jupiter.api.Assertions.fail;
 /**
  * Step definitions for transaction management.
  */
-public class DatabaseTransactionStepDefinitions {
+public class DatabaseTransactionStepDefinitions extends Steps {
+
+    public DatabaseTransactionStepDefinitions(TestContext<?> testContext) {
+        super(testContext);
+    }
+
 
     private DatabaseStepContext ctx() {
         return DatabaseStepContext.getInstance();

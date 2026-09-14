@@ -1,11 +1,19 @@
 package com.qa.framework.stepdefinitions.api;
 
+
+import com.acebase.context.TestContext;
+import com.acebase.steps.Steps;
 import io.cucumber.java.en.Given;
 
 /**
  * Step definitions for API configuration - base URL, auth, etc.
  */
-public class APIConfigurationStepDefinitions {
+public class APIConfigurationStepDefinitions extends Steps {
+
+    public APIConfigurationStepDefinitions(TestContext<?> testContext) {
+        super(testContext);
+    }
+
 
     private APIStepContext ctx() {
         return APIStepContext.getInstance();

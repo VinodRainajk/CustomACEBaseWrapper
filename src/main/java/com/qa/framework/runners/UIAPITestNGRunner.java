@@ -24,7 +24,8 @@ import io.cucumber.testng.CucumberOptions;
         "com.qa.framework.stepdefinitions.ui",
         "com.qa.framework.stepdefinitions.api",
         "com.qa.framework.payload"
-    }
+    },
+    objectFactory = com.acebase.context.AcebaseObjectFactory.class
 )
 public class UIAPITestNGRunner extends TestNGRunner {
 }
